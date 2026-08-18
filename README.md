@@ -4,9 +4,11 @@ A scrollable cemetery of dead projects. Graves stand in plots either side of a
 path, each engraved with the years the project lived; clicking one lights the
 ground around it and opens its epitaph on the right.
 
+**→ [gr13nka.github.io/Graveyard](https://gr13nka.github.io/Graveyard/)**
+
 <!-- ![the graveyard](shots/README.png) -->
 
-## Running it
+## Running it locally
 
 ```bash
 python3 -m http.server 8000
@@ -112,6 +114,49 @@ node tools/bury.mjs avm --force --epitaph "A virtual machine with no world to ru
 Or edit `data/projects.json` directly — the file is the source of truth and the
 tool has no state of its own.
 
+## Making your own
+
+Everything here works against *your* GitHub account, not mine — `bury.mjs` asks
+`gh` who you are and lists your repos, so a fork needs no editing to become
+somebody else's graveyard.
+
+```bash
+gh repo fork gr13nka/Graveyard --clone --fork-name Graveyard
+cd Graveyard
+echo '[]' > data/projects.json     # empty the yard; these graves are mine
+node tools/bury.mjs --list         # your stalest repos
+node tools/bury.mjs <repo> --epitaph "..." --cause "..."
+python3 -m http.server 8000        # look at it
+```
+
+When it is worth showing:
+
+```bash
+git commit -am "My graveyard"
+git push
+gh api -X POST repos/:owner/Graveyard/pages \
+  -f 'source[branch]=main' -f 'source[path]=/'
+```
+
+Pages serves it at `https://<you>.github.io/Graveyard/`. Every path in the page
+is relative, so the `/Graveyard/` subpath needs no configuration — and if you
+rename the repo, or serve it from a custom domain, it keeps working.
+
+Two things worth knowing before you publish:
+
+- **Pages needs the repo to be public** unless you are on a paid plan, and the
+  graveyard names every repo in it. Check `data/projects.json` for anything you
+  would rather not announce — a private repo's name and your description of why
+  it died are both visible once this is up.
+- **The epitaph is the point.** A yard of auto-filled descriptions and blank
+  epitaphs is a list of repos with extra steps.
+
+Then link it from your profile README (`<you>/<you>`, `README.md`):
+
+```markdown
+[⚰︎ my graveyard](https://<you>.github.io/Graveyard/) — projects that didn't make it
+```
+
 ## The data file
 
 ```json
@@ -180,6 +225,7 @@ vendor/karakuli/      the Karakuli kit, copied in verbatim, never edited here
 data/projects.json    the graves
 shots/<slug>/         screenshots
 tools/bury.mjs        the burial command
+.nojekyll             stops GitHub Pages running the files through Jekyll
 ```
 
 ## A note on the style
