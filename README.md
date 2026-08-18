@@ -173,6 +173,7 @@ js/
   marker.js           one grave: motif, engraved dates, shadow
   road.js             the procedurally drawn path
   epitaph.js          the right-hand panel
+  candle.js           the candle that replaces the cursor
   doodles.js          motif loading and inlining
 doodles/              hand-drawn SVG motifs, stroke-only
 vendor/karakuli/      the Karakuli kit, copied in verbatim, never edited here
@@ -189,12 +190,21 @@ stroke-only motifs, no gradients, no shadows for separation, motion that
 overshoots and settles. The kit is vendored into `vendor/karakuli/` and used
 unmodified.
 
-The one place this site departs from it is the ground: Karakuli's paper is warm
-cream, and this is a night scene on deep indigo. That is the kit's *Dark mode*
-backlog item, which has not been settled yet, so the night palette lives here as
-a local override rather than being folded into canon. If it ever is, three
-things found while building this need dealing with: the pen brights do not
-survive inversion, several of the kit's hand-drawn data-URI assets bake the ink
-colour into their markup and vanish on a dark ground, and `.krk-enter-sprout`
-animates `transform`, so it destroys the placement of any element positioned
-with one.
+It departs from the kit in two places, both on purpose.
+
+**The ground.** Karakuli's paper is warm cream; this is a night scene on deep
+indigo. That is the kit's *Dark mode* backlog item, which has not been settled,
+so the night palette lives here as a local override rather than being folded
+into canon. If it ever is, three things found while building this need dealing
+with: the pen brights do not survive inversion, several of the kit's hand-drawn
+data-URI assets bake the ink colour into their markup and vanish on a dark
+ground, and `.krk-enter-sprout` animates `transform`, so it destroys the
+placement of any element positioned with one.
+
+**Light is drawn with gradients**, which the kit forbids outright. Every glow —
+the candle, the lanterns, the pool around a selected grave — is a CSS radial
+falloff. They were originally stroked SVG motifs, to stay inside the rule, and
+they looked wrong: lumpy edges and spiky rays that read as smudges and sparkles
+rather than as light. This is a deliberate reversal, not an oversight. It is
+confined to depicting light and used nowhere else, and the no-gradient rule
+still holds for every surface, card and divider in the project.
