@@ -1,0 +1,483 @@
+/*
+ * Graveyard — layout, scene, marker and epitaph styles.
+ * -----------------------------------------------------------------------
+ * Assumes the Karakuli kit is already loaded (tokens → karakuli → boil →
+ * anim). Everything here is either layout the kit has no opinion about
+ * (two-pane, scroll column, absolute plots) or the cemetery's own drawing.
+ *
+ * Canon held throughout: no gradients, no box-shadows, no #000/#fff, organic
+ * asymmetric radii, --krk-motion-bounce for anything that moves or scales.
+ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { height: 100%; margin: 0; }
+
+/* ---- Two-pane shell ------------------------------------------------- */
+
+.gy-app {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.85fr);
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ---- Scene (left) --------------------------------------------------- */
+
+/* The frame holds still; the scroller inside it moves. That is what lets the
+   gate button stay pinned while the cemetery scrolls past. */
+.gy-frame {
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.gy-scene {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+.gy-field {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+}
+
+.gy-sky, .gy-plots { position: absolute; inset: 0; }
+
+.gy-road {
+  position: absolute;
+  top: 0;
+  color: var(--gy-mid);
+  pointer-events: none;
+}
+
+.gy-road__cobble { opacity: 0.6; }
+
+/* ---- One plot ------------------------------------------------------- */
+
+/* Width is pinned to the marker so translate(-50%) centres on the stone.
+   Undergrowth is allowed to hang outside the box rather than widen it —
+   otherwise a grave with a tree beside it drifts off its own plot. */
+.gy-plot {
+  position: absolute;
+  width: var(--gy-size, 150px);
+  transform: translate(-50%, -100%);
+  color: var(--gy-near);
+}
+
+.gy-ambient {
+  position: absolute;
+  display: block;
+  translate: -50% 0;
+  width: var(--gy-size, 44px);
+  height: var(--gy-size, 44px);
+  color: var(--gy-far);
+  pointer-events: none;
+}
+
+.gy-ambient svg { width: 100%; height: 100%; display: block; }
+
+/* ---- The marker ----------------------------------------------------- */
+
+.gy-marker {
+  position: relative;
+  display: block;
+  width: var(--gy-size, 120px);
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: inherit;
+  transform-origin: 50% 100%;
+  rotate: var(--gy-tilt, 0deg);
+  transition: color var(--krk-motion-fast) var(--krk-motion-ease),
+              translate var(--krk-motion-slow) var(--krk-motion-bounce);
+}
+
+.gy-marker:hover { translate: 0 -5px; }
+
+.gy-marker:focus-visible {
+  outline: 2px solid var(--krk-accent);
+  outline-offset: 4px;
+  border-radius: 10px 13px 9px 12px / 12px 9px 13px 10px;
+}
+
+.gy-marker__stone {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.gy-engraving {
+  /* The motif root sets stroke/fill for its paths; carved text has to opt
+     back out or it renders as an outline. */
+  fill: currentColor;
+  stroke: none;
+  font-family: var(--krk-font-hand);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  opacity: 0.82;
+}
+
+.gy-marker__name {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 2px);
+  translate: -50% 0;
+  white-space: nowrap;
+  font-size: var(--krk-text-sm);
+  color: var(--krk-ink-soft);
+  /* Always readable. Hover-only names meant finding a project required
+     hovering all eight of them — the single worst thing about navigating
+     the yard. */
+  transition: color var(--krk-motion-fast) var(--krk-motion-ease);
+  pointer-events: none;
+}
+
+.gy-marker:hover .gy-marker__name { color: var(--gy-near); }
+
+/* ---- Lamp light along the road --------------------------------------
+ * The scene's warm light. Amber appears nowhere else in the yard except a
+ * selected grave, so it stays a signal rather than a decoration — the eye
+ * gets landing points down a column that was otherwise uniformly chalk.
+ * No gradients anywhere: the glow is drawn with the same pen as everything
+ * else, radiating strokes plus a pool on the ground.
+ */
+
+.gy-way { position: absolute; inset: 0; }
+
+.gy-lamp {
+  position: absolute;
+  width: var(--gy-size, 54px);
+  height: var(--gy-size, 54px);
+  translate: -50% -100%;
+  pointer-events: none;
+}
+
+.gy-lamp svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.gy-lamp__body { color: var(--gy-lamp); }
+
+.gy-lamp__rays {
+  color: var(--gy-lamp-deep);
+  scale: 1.55;
+  opacity: 0.75;
+  animation: gy-flicker 2.6s steps(1) infinite;
+}
+
+.gy-lamp__pool {
+  color: var(--gy-lamp-deep);
+  opacity: 0.42;
+  scale: 1.5 0.62;
+  translate: 0 62%;
+}
+
+/* A lantern that never moves reads as a sticker. Three discrete steps, slow
+   enough to notice only in the corner of the eye — the same discrete-frame
+   logic as boil, not a smooth pulse. */
+@keyframes gy-flicker {
+  0%   { opacity: 0.75; scale: 1.55; }
+  33%  { opacity: 0.62; scale: 1.48; }
+  66%  { opacity: 0.82; scale: 1.6; }
+  100% { opacity: 0.75; scale: 1.55; }
+}
+
+/* ---- Year milestones -------------------------------------------------
+ * The yard runs newest-death-first, and nothing said so. These are the
+ * signposts that turn a dark column into a timeline you can place yourself in.
+ */
+
+.gy-milestone {
+  position: absolute;
+  translate: -50% 0;
+  padding: 0 var(--krk-space-3);
+  /* Sits in the road, so it carries the ground colour and reads as a gap in
+     the path with a marker standing in it, rather than a number printed on
+     top of the rails. */
+  background: var(--krk-paper);
+  border-radius: 11px 8px 12px 9px / 9px 12px 8px 11px;
+  font-size: var(--krk-text-xl);
+  color: var(--gy-mid);
+  letter-spacing: 0.06em;
+  pointer-events: none;
+}
+
+/* The candle is the colour moment: it exists only while this grave is lit. */
+.gy-marker__candle {
+  position: absolute;
+  right: -14%;
+  bottom: 2%;
+  width: 26%;
+  height: auto;
+  overflow: visible;
+  color: var(--krk-pen-orange);
+  transform-origin: 50% 100%;
+  scale: 0;
+  opacity: 0;
+}
+
+.is-selected .gy-marker { color: var(--gy-lamp); }
+.is-selected .gy-marker__name { color: var(--gy-lamp); font-weight: 700; }
+
+.is-selected .gy-marker__candle {
+  animation: gy-candle-sprout 320ms var(--krk-motion-bounce) forwards;
+}
+
+@keyframes gy-candle-sprout {
+  0%   { scale: 0.2 0.3; opacity: 0; }
+  65%  { scale: 1.08 1.06; opacity: 1; }
+  100% { scale: 1 1; opacity: 1; }
+}
+
+/* Squash-and-settle on click — the bounce the user asked for, kept to a few
+   pixels so it reads as weight and not as a flourish. */
+.gy-marker--struck { animation: gy-struck 440ms var(--krk-motion-bounce); }
+
+@keyframes gy-struck {
+  0%   { translate: 0 0;     scale: 1 1; }
+  28%  { translate: 0 -11px; scale: 0.93 1.09; }
+  62%  { translate: 0 0;     scale: 1.07 0.93; }
+  100% { translate: 0 0;     scale: 1 1; }
+}
+
+/* ---- Back to the gate ----------------------------------------------- */
+
+.gy-gate {
+  position: absolute;
+  top: var(--krk-space-4);
+  left: 50%;
+  z-index: 5;
+  translate: -50% 0;
+  z-index: 5;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: var(--krk-paper);
+  color: var(--krk-ink);
+  border: var(--krk-stroke-ui) solid var(--krk-ink);
+  border-radius: 24px 21px 25px 22px / 22px 25px 21px 24px;
+  cursor: pointer;
+  transition: translate var(--krk-motion-slow) var(--krk-motion-bounce),
+              background-color var(--krk-motion-fast) var(--krk-motion-ease);
+}
+
+/* Hidden at the top of the yard; springs in once there is a way back. */
+.gy-gate {
+  opacity: 0;
+  scale: 0.7;
+  pointer-events: none;
+  transition: opacity var(--krk-motion-fast) var(--krk-motion-ease),
+              scale var(--krk-motion-slow) var(--krk-motion-bounce),
+              translate var(--krk-motion-slow) var(--krk-motion-bounce);
+}
+
+.gy-gate.is-shown { opacity: 1; scale: 1; pointer-events: auto; }
+
+.gy-gate:hover { translate: -50% -4px; }
+.gy-gate:active { translate: -50% 1px; }
+.gy-gate svg { width: 24px; height: 24px; rotate: -90deg; }
+
+.gy-gate:focus-visible { outline: 2px solid var(--krk-accent); outline-offset: 3px; }
+
+/* ---- Epitaph (right) ------------------------------------------------ */
+
+.gy-epitaph {
+  position: relative;
+  overflow-y: auto;
+  padding: var(--krk-space-7) var(--krk-space-6);
+}
+
+/* Nothing picked yet: centre the cat rather than stranding it in the corner
+   of an otherwise empty half-screen. */
+.gy-epitaph.is-empty {
+  display: grid;
+  place-content: center;
+  text-align: center;
+}
+
+.gy-epitaph.is-empty .gy-epitaph__empty-art { margin-inline: auto; }
+
+/* The pane divider is drawn, not ruled — same wobble as .krk-divider, stood
+   on end. Masked rather than tinted so it follows the palette's ink. */
+.gy-epitaph::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  background-color: var(--krk-ink);
+  opacity: 0.4;
+  -webkit-mask-image: var(--gy-rule);
+  mask-image: var(--gy-rule);
+  -webkit-mask-repeat: repeat-y;
+  mask-repeat: repeat-y;
+  -webkit-mask-size: 8px 200px;
+  mask-size: 8px 200px;
+  mask-mode: alpha;
+}
+
+:root {
+  --gy-rule: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 200'%3E%3Cpath d='M4,0 C2.5,12 5.5,25 4,37 C2.5,50 5.5,62 4,75 C2.5,87 5.5,100 4,112 C2.5,125 5.5,137 4,150 C2.5,162 5.5,175 4,187 C3,195 4.5,197 4,200' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+.gy-epitaph__page { max-width: 46ch; }
+
+/* Demoted from accent: an amber badge directly above the name was the first
+   thing the eye hit, which made the project name read second on its own page.
+   Accent in this pane is reserved for the repo link — the only action here. */
+.gy-epitaph__badge { width: 44px; color: var(--gy-mid); margin-bottom: var(--krk-space-4); }
+.gy-epitaph__badge svg { width: 100%; height: auto; }
+
+.gy-epitaph__name {
+  margin: 0;
+  font-size: var(--krk-text-3xl);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.gy-epitaph__dates {
+  margin: var(--krk-space-1) 0 var(--krk-space-4);
+  font-size: var(--krk-text-sm);
+  color: var(--krk-ink-soft);
+}
+
+.gy-epitaph__quote {
+  margin: 0 0 var(--krk-space-5);
+  font-size: var(--krk-text-2xl);
+  color: var(--krk-ink);
+  line-height: 1.3;
+  max-width: 24ch;
+}
+
+.gy-epitaph__link {
+  display: inline-block;
+  color: var(--krk-accent);
+  text-decoration: none;
+  border-bottom: var(--krk-stroke-ui) solid currentColor;
+  padding-bottom: 1px;
+  transition: opacity var(--krk-motion-fast) var(--krk-motion-ease);
+}
+
+.gy-epitaph__link:hover { opacity: 0.72; }
+.gy-epitaph__link:focus-visible { outline: 2px solid var(--krk-accent); outline-offset: 3px; }
+
+.gy-epitaph__body { margin: 0 0 var(--krk-space-4); color: var(--krk-ink); }
+
+.gy-epitaph__cause { margin: 0 0 var(--krk-space-5); font-size: var(--krk-text-sm); color: var(--krk-ink-soft); }
+.gy-epitaph__cause-label { font-family: var(--krk-font-hand); color: var(--krk-ink-faint); }
+
+.gy-epitaph__empty-art { display: block; width: 104px; color: var(--gy-mid); margin-bottom: var(--krk-space-5); }
+.gy-epitaph__empty-art svg { width: 100%; height: auto; }
+.gy-epitaph__empty { font-size: var(--krk-text-xl); color: var(--krk-ink-soft); max-width: 22ch; margin-inline: auto; }
+
+/* Screenshots: no canon exists for rasters, so they borrow .krk-card--line's
+   treatment — hairline, organic radius, no shadow. */
+.gy-shots { display: grid; gap: var(--krk-space-3); }
+
+.gy-shot {
+  margin: 0;
+  padding: 6px;
+  border: var(--krk-stroke-ui) solid var(--krk-ink);
+  border-radius: 14px 18px 12px 16px / 16px 12px 18px 14px;
+  background: var(--krk-paper-2);
+  overflow: hidden;
+}
+
+.gy-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px 13px 9px 12px / 12px 9px 13px 10px;
+}
+
+/* ---- Narrow: the panel becomes a sheet ------------------------------ */
+
+@media (max-width: 900px) {
+  .gy-app { grid-template-columns: 1fr; }
+  .gy-epitaph {
+    position: fixed;
+    inset: auto 0 0 0;
+    max-height: 62vh;
+    background: var(--krk-paper);
+    border-top: var(--krk-stroke-ui) solid var(--krk-ink);
+    border-radius: 22px 26px 0 0 / 26px 22px 0 0;
+    padding: var(--krk-space-5) var(--krk-space-5) var(--krk-space-6);
+  }
+  .gy-epitaph::before { display: none; }
+}
+
+/* ---- Dark-ground repairs for the kit's drawn assets ------------------
+ * .krk-divider and .krk-arrow-inline draw themselves from data-URI SVGs with
+ * the ink colour (#26241F) baked into the markup, so they cannot follow a
+ * palette — on any dark ground they render dark-on-dark and disappear.
+ *
+ * Re-cutting them as masks fixes it without touching the vendored kit: the
+ * SVG supplies the shape, `currentColor` supplies the ink. Worth carrying
+ * upstream if the night palette becomes canon — every hand-drawn data URI in
+ * karakuli.css has the same problem.
+ */
+
+:root {
+  --gy-wobble-h: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 8'%3E%3Cpath d='M0,4 C12,2.5 25,5.5 37,4 C50,2.5 62,5.5 75,4 C87,2.5 100,5.5 112,4 C125,2.5 137,5.5 150,4 C162,2.5 175,5.5 187,4 C195,3 200,4.5 200,4' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --gy-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M6,27 C16,23 29,22 38,24' fill='none' stroke='%23000' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M32,16 C36,19 40,22 43,25' fill='none' stroke='%23000' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M43,25 C39,28 35,30 31,33' fill='none' stroke='%23000' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+.gy-epitaph .krk-divider {
+  background-image: none;
+  background-color: currentColor;
+  color: var(--krk-ink);
+  -webkit-mask-image: var(--gy-wobble-h);
+  mask-image: var(--gy-wobble-h);
+  -webkit-mask-repeat: repeat-x;
+  mask-repeat: repeat-x;
+  -webkit-mask-size: 200px 8px;
+  mask-size: 200px 8px;
+  mask-mode: alpha;
+}
+
+.gy-epitaph .krk-arrow-inline::after {
+  background-image: none;
+  background-color: currentColor;
+  -webkit-mask-image: var(--gy-arrow);
+  mask-image: var(--gy-arrow);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  mask-mode: alpha;
+}
+
+/* ---- The gate sign --------------------------------------------------- */
+
+.gy-sign {
+  position: absolute;
+  top: 132px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  pointer-events: none;
+}
+
+.gy-sign__name {
+  margin: 0;
+  font-size: var(--krk-text-3xl);
+  font-weight: 400;
+  color: var(--gy-near);
+  letter-spacing: 0.01em;
+}
+
+.gy-sign__meta {
+  margin: var(--krk-space-1) 0 0;
+  font-size: var(--krk-text-sm);
+  color: var(--gy-mid);
+}

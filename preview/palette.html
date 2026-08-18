@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en" data-palette="b">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Graveyard — palette mockups</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&family=Shantell+Sans:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- Load order is load-bearing: karakuli.css assumes tokens.css is present. -->
+  <link rel="stylesheet" href="../vendor/karakuli/tokens.css" />
+  <link rel="stylesheet" href="../vendor/karakuli/karakuli.css" />
+  <link rel="stylesheet" href="../vendor/karakuli/boil.css" />
+  <link rel="stylesheet" href="../vendor/karakuli/anim.css" />
+  <link rel="stylesheet" href="../css/palettes.css" />
+  <link rel="stylesheet" href="../css/graveyard.css" />
+
+  <!-- boil.js injects its filter defs on DOMContentLoaded. It is an ES module,
+       so this page must be served over http — file:// fails silently. -->
+  <script type="module" src="../vendor/karakuli/boil.js"></script>
+
+  <style>
+    /* Preview-only chrome. Deliberately quiet — it must not compete with the
+       thing being judged. None of this ships in the real site. */
+    body { display: flex; flex-direction: column; overflow: hidden; }
+
+    .pv-bar {
+      flex: none;
+      display: flex;
+      align-items: center;
+      gap: var(--krk-space-4);
+      flex-wrap: wrap;
+      padding: var(--krk-space-3) var(--krk-space-5);
+      background: var(--krk-paper-2);
+    }
+
+    .pv-bar__title {
+      font-family: var(--krk-font-hand);
+      font-size: var(--krk-text-lg);
+      margin-right: var(--krk-space-2);
+    }
+
+    .pv-switch { display: flex; gap: var(--krk-space-2); flex-wrap: wrap; }
+    .pv-switch .krk-btn { font-size: var(--krk-text-sm); padding: 7px 15px; }
+
+    .pv-note {
+      font-size: var(--krk-text-sm);
+      color: var(--krk-ink-soft);
+      max-width: 52ch;
+      line-height: 1.4;
+    }
+    .pv-note b { color: var(--krk-ink); font-weight: 700; }
+
+    .pv-swatches { display: flex; gap: 6px; align-items: center; }
+    .pv-swatch {
+      width: 26px; height: 26px;
+      border: var(--krk-stroke-ui) solid var(--krk-ink);
+      border-radius: 9px 12px 8px 11px / 11px 8px 12px 9px;
+    }
+    .pv-swatch-label { font-size: var(--krk-text-xs); color: var(--krk-ink-faint); }
+
+    .gy-app { flex: 1; min-height: 0; height: auto; }
+
+    .pv-hint {
+      position: absolute; right: var(--krk-space-4); bottom: var(--krk-space-4);
+      font-size: var(--krk-text-xs); color: var(--krk-ink-faint);
+      font-family: var(--krk-font-hand); pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <header class="pv-bar">
+    <span class="pv-bar__title">palette</span>
+    <div class="pv-switch" id="pv-switch"></div>
+    <div class="pv-swatches" id="pv-swatches"></div>
+    <p class="pv-note" id="pv-note"></p>
+  </header>
+
+  <main class="gy-app">
+    <section id="scene"></section>
+    <aside id="epitaph"></aside>
+  </main>
+
+  <script type="module">
+    import { loadDoodles } from '../js/doodles.js';
+    import { layOutGraveyard } from '../js/plots.js';
+    import { mountScene } from '../js/scene.js';
+    import { mountEpitaph } from '../js/epitaph.js';
+
+    const PALETTES = {
+      a: {
+        label: 'A · warm dusk',
+        swatches: ['#241C24', '#302632', '#F2ECE0', '#E6BE6E', '#E68CC0'],
+        note: '<b>Night, warm dusk.</b> Aubergine ground, chalk ink, lamp-amber accent. Matches your library and village images. Settles the Unsettled <i>Dark mode</i> item in the direction canon already predicted — “warm-gray paper, chalk ink, rather than a cold black theme”.',
+      },
+      b: {
+        label: 'B · cool indigo',
+        swatches: ['#1A1B33', '#262845', '#F2ECE0', '#E6BE6E', '#8E96EE'],
+        note: '<b>Night, cool indigo.</b> Sampled straight off the train and phone-booth images (#24243C, #32325A). The closest literal match to your mood board — but it <b>reverses</b> canon’s recorded “rather than inverting to a cold black theme”.',
+      },
+      c: {
+        label: 'C · canon cream',
+        swatches: ['#F7F3E9', '#EFE9DA', '#26241F', '#2F3AC7', '#E6E3F4'],
+        note: '<b>Canon cream, unchanged.</b> A daylight graveyard, ink on paper, pen-blue accent. Uses only the three sanctioned knobs, so nothing in the kit has to change. Furthest from the images you sent.',
+      },
+      d: {
+        label: 'D · dark scene',
+        swatches: ['#F7F3E9', '#241C24', '#26241F', '#E07A1F', '#EFE9DA'],
+        note: '<b>Dark scene, cream chrome.</b> The cemetery is a night illustration; the panel and page stay canon paper. Canon already lets an illustration carry colour, so no token change is needed — but a dark block this large is itself a new surface treatment.',
+      },
+    };
+
+    const MOTIFS = [
+      'headstone-round', 'headstone-cross', 'obelisk', 'urn', 'mound',
+      'fence-post', 'lantern', 'candle', 'moon', 'star', 'cloud', 'spark',
+      'tree', 'flower-daisy', 'leaf', 'sprout', 'arrow-right',
+      'glow', 'light-pool', 'baton-sleep',
+    ];
+
+    const projects = await (await fetch('../data/projects.json')).json();
+    await loadDoodles(MOTIFS, '../doodles/');
+
+    const sceneEl = document.getElementById('scene');
+    const epitaph = mountEpitaph(document.getElementById('epitaph'));
+
+    /* Sound: the user asked for the playful register, so the dial is set
+       explicitly — the default 'calm' swallows tap cues entirely. */
+    let krk = null, CUES = null;
+    try {
+      const mod = await import('../vendor/karakuli/sound.js');
+      krk = mod.initKarakuliSound({ energy: 'playful' });
+      CUES = mod.KRK_CUES;
+    } catch { /* uisfx unreachable — the page stays silent and fully usable */ }
+
+    const scene = mountScene(sceneEl, layOutGraveyard(projects), {
+      onSelect: (project) => {
+        epitaph.show(project);
+        krk?.play(CUES.tap);
+      },
+    });
+
+    const hint = document.createElement('p');
+    hint.className = 'pv-hint';
+    hint.textContent = 'scroll down · click a grave';
+    sceneEl.appendChild(hint);
+
+    /* --- the switcher --- */
+    const switchEl = document.getElementById('pv-switch');
+    const swatchEl = document.getElementById('pv-swatches');
+    const noteEl = document.getElementById('pv-note');
+
+    function apply(key) {
+      document.documentElement.dataset.palette = key;
+      [...switchEl.children].forEach((b) =>
+        b.classList.toggle('krk-btn--primary', b.dataset.key === key));
+      noteEl.innerHTML = PALETTES[key].note;
+      swatchEl.innerHTML = '';
+      PALETTES[key].swatches.forEach((hex) => {
+        const chip = document.createElement('span');
+        chip.className = 'pv-swatch';
+        chip.style.background = hex;
+        chip.title = hex;
+        swatchEl.appendChild(chip);
+      });
+      const label = document.createElement('span');
+      label.className = 'pv-swatch-label';
+      label.textContent = PALETTES[key].swatches.join('  ');
+      swatchEl.appendChild(label);
+    }
+
+    Object.entries(PALETTES).forEach(([key, palette]) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'krk-btn krk-btn--wobbly';
+      btn.dataset.key = key;
+      btn.textContent = palette.label;
+      btn.addEventListener('click', () => { apply(key); krk?.play(CUES.tap); });
+      switchEl.appendChild(btn);
+    });
+
+    /* 1/2/3/4 flip palettes without leaving the scene. */
+    document.addEventListener('keydown', (e) => {
+      const key = ({ 1: 'a', 2: 'b', 3: 'c', 4: 'd' })[e.key];
+      if (key) apply(key);
+    });
+
+    apply('b');
+  </script>
+</body>
+</html>

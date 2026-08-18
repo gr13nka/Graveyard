@@ -1,0 +1,558 @@
+/*
+ * Karakuli — component layer
+ * -----------------------------------------------------------------------
+ * Naive, cosy, hand-drawn "paper + ink + colour moments" style.
+ * Assumes web/tokens.css is loaded first; every value below reaches for
+ * a --krk-* token except the deliberately hand-touched bits: organic
+ * per-corner border-radius pairs and a few embedded hand-drawn SVG
+ * marks. Both are varied per component on purpose — repeating the same
+ * numbers everywhere is what makes hand-drawn UI read as fake.
+ *
+ * No box-shadows anywhere (see rule below): separation comes from wash
+ * backgrounds and 1.5px ink hairlines instead.
+ */
+
+/* ============================================================
+   0. Global interaction states
+   Every .krk- interactive element shares one focus contract: no
+   browser default ring, a visible ink ring on keyboard focus only.
+   Centralised here so components don't each re-declare it.
+   ============================================================ */
+
+:where(
+  .krk-btn,
+  .krk-input,
+  .krk-textarea,
+  .krk-check,
+  .krk-radio,
+  .krk-tab,
+  .krk-toggle,
+  .krk-pillnav__item
+) {
+  outline: none;
+}
+
+:where(
+  .krk-btn,
+  .krk-input,
+  .krk-textarea,
+  .krk-check,
+  .krk-radio,
+  .krk-tab,
+  .krk-toggle,
+  .krk-pillnav__item
+):focus-visible {
+  outline: 2px solid var(--krk-accent);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   1. Buttons — .krk-btn
+   ============================================================ */
+
+.krk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--krk-space-2);
+  font-family: var(--krk-font-sans);
+  font-weight: 500;
+  font-size: var(--krk-text-base);
+  color: var(--krk-ink);
+  background: transparent;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px 14px 11px 13px / 13px 11px 14px 12px;
+  cursor: pointer;
+  transition: background-color var(--krk-motion-fast) var(--krk-motion-ease), color var(--krk-motion-fast) var(--krk-motion-ease),
+    border-color var(--krk-motion-fast) var(--krk-motion-ease), transform var(--krk-motion-fast) var(--krk-motion-ease);
+}
+
+.krk-btn:active {
+  transform: translateY(1px);
+}
+
+.krk-btn--primary {
+  background: var(--krk-accent);
+  color: var(--krk-paper);
+}
+
+.krk-btn--primary:hover {
+  background: #3a372f; /* one step lighter than ink — see contract, not a token */
+}
+
+.krk-btn--outline {
+  background: transparent;
+  color: var(--krk-ink);
+  border: var(--krk-stroke-ui) solid var(--krk-ink);
+}
+
+.krk-btn--outline:hover {
+  background: var(--krk-paper-2);
+}
+
+.krk-btn--ghost {
+  background: transparent;
+  color: var(--krk-ink-soft);
+}
+
+.krk-btn--ghost:hover {
+  background: var(--krk-paper-2);
+  color: var(--krk-ink);
+}
+
+/* Stronger asymmetry than the base radius reads as pen-drawn rather than
+   just "rounded corners". Layers on top of any variant above. */
+.krk-btn--wobbly {
+  border: var(--krk-stroke-ui) solid var(--krk-ink);
+  border-radius: 14px 20px 12px 18px / 18px 12px 20px 14px;
+}
+
+/* ============================================================
+   2. Cards — .krk-card
+   ============================================================ */
+
+.krk-card {
+  background: var(--krk-paper-2);
+  padding: var(--krk-space-5);
+  border-radius: 20px 24px 18px 22px / 24px 18px 22px 20px;
+}
+
+.krk-card--wash-lavender {
+  background: var(--krk-wash-lavender);
+}
+
+.krk-card--wash-sage {
+  background: var(--krk-wash-sage);
+}
+
+.krk-card--wash-blush {
+  background: var(--krk-wash-blush);
+}
+
+.krk-card--wash-butter {
+  background: var(--krk-wash-butter);
+}
+
+.krk-card--line {
+  background: var(--krk-paper);
+  border: var(--krk-stroke-ui) solid var(--krk-ink);
+  border-radius: 18px 22px 20px 16px / 20px 16px 22px 18px;
+}
+
+/* ============================================================
+   3. Form fields — .krk-input, .krk-textarea, .krk-field
+   ============================================================ */
+
+.krk-input,
+.krk-textarea {
+  display: block;
+  width: 100%;
+  font-family: var(--krk-font-sans);
+  font-size: var(--krk-text-base);
+  color: var(--krk-ink);
+  background: var(--krk-paper);
+  border: var(--krk-stroke-ui) solid var(--krk-ink-faint);
+  border-radius: 10px 12px 9px 11px / 12px 9px 11px 10px;
+  padding: 10px 14px;
+  transition: border-color var(--krk-motion-fast) var(--krk-motion-ease);
+}
+
+.krk-input::placeholder,
+.krk-textarea::placeholder {
+  color: var(--krk-ink-faint);
+}
+
+.krk-input:focus,
+.krk-textarea:focus {
+  border-color: var(--krk-ink);
+}
+
+.krk-textarea {
+  min-height: 96px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.krk-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--krk-space-1);
+}
+
+.krk-label {
+  font-family: var(--krk-font-sans);
+  font-size: var(--krk-text-sm);
+  font-weight: 500;
+  color: var(--krk-ink-soft);
+}
+
+/* ============================================================
+   4. Checkbox / radio — .krk-check, .krk-radio, .krk-choice
+   Custom appearance:none controls; the checked marks are hand-drawn
+   strokes baked in as data URIs (ink colour only, per the micro-asset
+   method — no fills, cubic beziers, gentle wobble, round caps).
+   ============================================================ */
+
+.krk-check,
+.krk-radio {
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  border: var(--krk-stroke-ui) solid var(--krk-ink);
+  background-color: var(--krk-paper);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 68%;
+  cursor: pointer;
+  transition: background-color var(--krk-motion-fast) var(--krk-motion-ease), border-color var(--krk-motion-fast) var(--krk-motion-ease);
+}
+
+.krk-check {
+  border-radius: 6px 8px 5px 7px / 8px 5px 7px 6px;
+}
+
+.krk-radio {
+  /* asymmetric 50% radius = egg, not circle */
+  border-radius: 48% 52% 50% 50% / 55% 45% 52% 48%;
+}
+
+.krk-check:checked {
+  /* same stroke as doodles/check.svg (viewBox 0 0 48 48, stroke-width 2.8) —
+     reused rather than redrawn, ink baked in since currentColor can't reach
+     into a data URI */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M8,20 C7,22 9,24 10,24 C14,28 18,32 20,34 C26,26 34,14 40,8' fill='none' stroke='%2326241F' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M24,30 C27,26 31,20 34,15' fill='none' stroke='%2326241F' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+.krk-radio:checked {
+  /* no ready doodle for a "scribbled-in dot" — drawn fresh, but on the same
+     48x48/stroke-2.8 canvas convention as check.svg so it reads as the same hand */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M24,33 C18,32 15,27 18,22 C21,17 27,15 31,20 C35,25 34,30 28,33 C23,35 19,32 20,28 C21,25 25,24 27,26 C29,28 28,30 25,30' fill='none' stroke='%2326241F' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+.krk-choice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-family: var(--krk-font-sans);
+  font-size: var(--krk-text-base);
+  color: var(--krk-ink);
+}
+
+/* ============================================================
+   5. Tabs — .krk-tabs, .krk-tab
+   ============================================================ */
+
+.krk-tabs {
+  display: flex;
+  align-items: center;
+  gap: var(--krk-space-2);
+  border-bottom: var(--krk-stroke-ui) solid var(--krk-ink-faint);
+}
+
+.krk-tab {
+  appearance: none;
+  background: none;
+  border: none;
+  font-family: var(--krk-font-sans);
+  font-weight: 500;
+  font-size: var(--krk-text-base);
+  color: var(--krk-ink-soft);
+  padding: var(--krk-space-2) var(--krk-space-4) 12px;
+  cursor: pointer;
+  background-repeat: no-repeat;
+  background-position: center bottom 3px;
+  transition: color var(--krk-motion-fast) var(--krk-motion-ease);
+}
+
+.krk-tab:hover {
+  color: var(--krk-ink);
+}
+
+.krk-tab.is-active {
+  color: var(--krk-ink);
+  /* two overlapping wobbly passes, like a quick pen underline */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 16'%3E%3Cpath d='M2,7 C15,3 30,10 45,6 C60,2 75,9 90,5 C100,3 108,7 117,4' fill='none' stroke='%2326241F' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' opacity='0.9'/%3E%3Cpath d='M4,10 C18,13 33,7 48,11 C63,14 78,8 93,12 C103,14 110,10 116,11' fill='none' stroke='%2326241F' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' opacity='0.6'/%3E%3C/svg%3E");
+  background-size: 56px 10px;
+}
+
+/* ============================================================
+   6. Divider — .krk-divider (<hr> replacement)
+   ============================================================ */
+
+.krk-divider {
+  border: none;
+  height: 8px;
+  margin: var(--krk-space-5) 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 8'%3E%3Cpath d='M0,4 C12,2.5 25,5.5 37,4 C50,2.5 62,5.5 75,4 C87,2.5 100,5.5 112,4 C125,2.5 137,5.5 150,4 C162,2.5 175,5.5 187,4 C195,3 200,4.5 200,4' fill='none' stroke='%2326241F' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 200px 8px;
+  opacity: 0.5;
+}
+
+/* ============================================================
+   7. List — .krk-list, .krk-list-row
+   Row separators reuse the divider stroke as an ::after overlay
+   rather than border-image — border-image tiling a wavy stroke across
+   an arbitrary row width fights the SVG's own repeat period, while a
+   background on ::after tiles cleanly and stays out of layout.
+   ============================================================ */
+
+.krk-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.krk-list-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--krk-space-3);
+  padding: var(--krk-space-4) 0;
+}
+
+.krk-list-row:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 8'%3E%3Cpath d='M0,4 C12,2.5 25,5.5 37,4 C50,2.5 62,5.5 75,4 C87,2.5 100,5.5 112,4 C125,2.5 137,5.5 150,4 C162,2.5 175,5.5 187,4 C195,3 200,4.5 200,4' fill='none' stroke='%2326241F' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 160px 6px;
+  opacity: 0.35;
+}
+
+.krk-list-row__meta {
+  font-family: var(--krk-font-sans);
+  font-size: var(--krk-text-sm);
+  color: var(--krk-ink-soft);
+}
+
+/* ============================================================
+   8. Pill navigation — .krk-pillnav
+   A cosy floating bottom tab bar. No shadows — the lavender wash
+   against paper is separation enough.
+   ============================================================ */
+
+.krk-pillnav {
+  position: fixed;
+  left: 50%;
+  bottom: var(--krk-space-5);
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  background: var(--krk-wash-lavender);
+  border-radius: var(--krk-radius-pill);
+  z-index: 40;
+}
+
+.krk-pillnav__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  border: none;
+  border-radius: var(--krk-radius-pill);
+  background: transparent;
+  color: var(--krk-ink-soft);
+  cursor: pointer;
+  transition: background-color var(--krk-motion-fast) var(--krk-motion-ease), color var(--krk-motion-fast) var(--krk-motion-ease);
+}
+
+.krk-pillnav__item.is-active {
+  background: var(--krk-paper);
+  color: var(--krk-ink);
+}
+
+/* --- Sliding variant — .krk-pillnav--slider ------------------
+   One accent tile travels to the chosen screen instead of each
+   item lighting up in place. Every item keeps its doodle at all
+   times: the tile arriving is what marks the screen, so nothing
+   collapses to a dot. Requires web/pillnav.js to size and move the
+   indicator; without it the markup still renders as a plain row.  */
+
+.krk-pillnav--slider {
+  position: relative;
+  gap: 2px;
+  /* Nothing in this component is a pill or an ellipse: the bar is a barely
+     rounded rectangle, the marker inside it a rounded square. Overrides the
+     base .krk-pillnav pill radius. */
+  border-radius: 13px 14px 12px 13px / 13px 12px 14px 13px;
+}
+
+/* Sits behind the items, so the doodle reads on top of the fill. */
+.krk-pillnav__indicator {
+  position: absolute;
+  top: 6px; /* matches .krk-pillnav padding — the marker insets with the row */
+  left: 0;
+  height: 42px; /* squashed: slightly wider than tall, matching the item box */
+  background: var(--krk-accent);
+  /* Organic asymmetry (sanctioned intrusion #5), pushed further than the
+     usual +/-1px: every corner disagrees, so the fill reads as drawn by hand
+     rather than stamped out. Same trick .krk-btn--wobbly uses. */
+  border-radius: 10px 6px 8px 5px / 6px 9px 5px 8px;
+  pointer-events: none;
+  transition: transform var(--krk-motion-slow) var(--krk-motion-bounce),
+    width var(--krk-motion-slow) var(--krk-motion-bounce);
+}
+
+/* Before the first measurement there is no honest position to show. */
+.krk-pillnav__indicator:not(.is-measured) {
+  opacity: 0;
+}
+
+.krk-pillnav--slider .krk-pillnav__item {
+  position: relative; /* lifts the doodle above the travelling tile */
+  z-index: 1;
+  min-width: 52px;
+  min-height: 42px;
+  border-radius: 9px 6px 7px 6px / 6px 8px 6px 7px;
+  background: transparent;
+  color: var(--krk-accent);
+}
+
+/* The fill is the active marker, so the item itself never takes one —
+   only the doodle flips to paper as the tile slides under it. */
+.krk-pillnav--slider .krk-pillnav__item.is-active {
+  background: transparent;
+  color: var(--krk-paper);
+}
+
+.krk-pillnav--slider .krk-pillnav__item svg {
+  width: 26px;
+  height: 26px;
+}
+
+
+/* ============================================================
+   9. Dot grid — .krk-dotgrid
+   Dotted-notebook background utility, apply to any container.
+   ============================================================ */
+
+.krk-dotgrid {
+  background-image: radial-gradient(var(--krk-ink-faint) 1.2px, transparent 1.3px);
+  background-size: 26px 26px;
+}
+
+/* ============================================================
+   10. Hand type + inline arrow — .krk-hand, .krk-arrow-inline
+   ============================================================ */
+
+.krk-hand {
+  font-family: var(--krk-font-hand);
+  font-size: 1.06em;
+}
+
+.krk-arrow-inline::after {
+  content: "";
+  display: inline-block;
+  width: 1em;
+  height: 0.6em;
+  margin-left: 0.4em;
+  vertical-align: middle;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  /* same stroke as doodles/arrow-right.svg (viewBox 0 0 48 48, stroke-width 2.8) —
+     reused rather than redrawn so every arrow in the system is the same pen stroke;
+     currentColor isn't usable in a data URI, so the ink token is baked in as a hex */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M6,27 C16,23 29,22 38,24' fill='none' stroke='%2326241F' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M32,16 C36,19 40,22 43,25' fill='none' stroke='%2326241F' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M43,25 C39,28 35,30 31,33' fill='none' stroke='%2326241F' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+/* ============================================================
+   11. Toggle — .krk-toggle
+   ============================================================ */
+
+.krk-toggle {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 44px;
+  height: 26px;
+  margin: 0;
+  border: var(--krk-stroke-ui) solid var(--krk-ink);
+  border-radius: var(--krk-radius-pill);
+  background: var(--krk-paper);
+  cursor: pointer;
+  transition: background-color var(--krk-motion-fast) var(--krk-motion-ease), border-color var(--krk-motion-fast) var(--krk-motion-ease);
+}
+
+.krk-toggle::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50% 50% 50% 50% / 55% 45% 55% 45%;
+  background: var(--krk-ink);
+  transform: translateY(-50%);
+  transition: transform var(--krk-motion-fast) var(--krk-motion-ease);
+}
+
+.krk-toggle:checked {
+  background: color-mix(in srgb, var(--krk-accent) 18%, var(--krk-paper));
+  border-color: var(--krk-accent);
+}
+
+.krk-toggle:checked::before {
+  transform: translate(20px, -50%);
+}
+
+/* ============================================================
+   12. Colour moments — .krk-moment, .krk-bloom
+   --krk-accent is left alone here (custom properties already inherit);
+   this context only adds opt-in pen-colour utilities for children that
+   should carry a specific ink, plus a gentle entrance for them.
+   ============================================================ */
+
+.krk-moment .krk-doodle-blue {
+  color: var(--krk-pen-blue);
+}
+
+.krk-moment .krk-doodle-green {
+  color: var(--krk-pen-green);
+}
+
+.krk-moment .krk-doodle-orange {
+  color: var(--krk-pen-orange);
+}
+
+.krk-moment .krk-doodle-pink {
+  color: var(--krk-pen-pink);
+}
+
+.krk-bloom {
+  animation: krk-bloom-in 400ms var(--krk-motion-ease) both;
+}
+
+@keyframes krk-bloom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.krk-bloom:nth-child(1) { animation-delay: 0ms; }
+.krk-bloom:nth-child(2) { animation-delay: 60ms; }
+.krk-bloom:nth-child(3) { animation-delay: 120ms; }
+.krk-bloom:nth-child(4) { animation-delay: 180ms; }
+.krk-bloom:nth-child(5) { animation-delay: 240ms; }
+.krk-bloom:nth-child(6) { animation-delay: 300ms; }
+

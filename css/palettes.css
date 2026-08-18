@@ -1,0 +1,115 @@
+/*
+ * The four candidate palettes, as complete token sets.
+ * -----------------------------------------------------------------------
+ * Each is a full override of Karakuli's ground/ink/wash tokens, applied on
+ * <html data-palette="…"> so `body` (whose background and colour live in the
+ * kit's tokens.css) re-skins along with everything else.
+ *
+ * Note the pen brights are NOT carried over unchanged into the night sets:
+ * --krk-pen-blue #2F3AC7 is a dark bright, and on a dark ground it stops
+ * reading as a bright at all. Inversion needs them lifted. That's a real
+ * finding for the dark-mode canon pass, not a local fudge.
+ */
+
+/* ---- A — night, warm dusk ------------------------------------------- */
+/* Aubergine ground, chalk ink, lamp-amber accent. The direction STYLE.md
+   §11 predicted: warm, never a cold black. */
+:root[data-palette='a'] {
+  --krk-paper: #241C24;
+  --krk-paper-2: #302632;
+  --krk-ink: #F2ECE0;
+  --krk-ink-soft: #B9AFA2;
+  --krk-ink-faint: #7A7168;
+
+  --krk-pen-blue: #8E96EE;
+  --krk-pen-green: #7BC48F;
+  --krk-pen-orange: #E8A24A;
+  --krk-pen-pink: #E68CC0;
+
+  --krk-wash-lavender: #322A40;
+  --krk-wash-sage: #2B3326;
+  --krk-wash-blush: #3C2A32;
+  --krk-wash-butter: #382E20;
+
+  --krk-accent: #E6BE6E;
+  --krk-danger: #E0705C;
+
+  --gy-near: #F2ECE0;
+  --gy-mid: #8E8296;
+  --gy-far: #4E4152;
+  --gy-lamp: #E6BE6E;
+  --gy-lamp-deep: #C98A44;
+}
+
+/* ---- B — night, cool indigo ----------------------------------------- */
+/* Sampled straight off the train and phone-booth images. Reverses canon's
+   recorded "rather than inverting to a cold black theme" hypothesis. */
+:root[data-palette='b'] {
+  --krk-paper: #1A1B33;
+  --krk-paper-2: #262845;
+  --krk-ink: #F2ECE0;
+  --krk-ink-soft: #A6AAC4;
+  /* was #6E7391 — 3.62:1 on the ground, under the 4.5:1 floor for small text */
+  --krk-ink-faint: #8C92B8;
+
+  --krk-pen-blue: #8E96EE;
+  --krk-pen-green: #6FBF97;
+  --krk-pen-orange: #E8A24A;
+  --krk-pen-pink: #E68CC0;
+
+  --krk-wash-lavender: #2C2E52;
+  --krk-wash-sage: #22333A;
+  --krk-wash-blush: #3A2A4A;
+  --krk-wash-butter: #35331F;
+
+  --krk-accent: #E6BE6E;
+  --krk-danger: #E0705C;
+
+  /* Atmospheric depth. Distance is a hue shift toward the ground, not chalk
+     at low opacity — dimming chalk gives #86848A, a muddy grey that reads as
+     dirt on the page rather than air between you and the thing. */
+  --gy-near: #F2ECE0;   /* graves — 14.3:1, the only thing at full strength */
+  --gy-mid: #7C84B4;    /* road, fence, milestones — 4.66:1 */
+  --gy-far: #454B7A;    /* sky, stars, undergrowth — 2.03:1, barely there */
+  --gy-lamp: #E6BE6E;   /* lantern flame */
+  --gy-lamp-deep: #C98A44; /* the rays and the pool it throws */
+}
+
+/* ---- C — canon cream ------------------------------------------------ */
+/* Nothing overridden but the accent, which is the sanctioned knob. Pen blue
+   is the one bright canon clears for small text and links. */
+:root[data-palette='c'] {
+  --krk-accent: #2F3AC7;
+
+  /* Daylight inverts the depth scale: distance goes toward the paper. */
+  --gy-near: #26241F;
+  --gy-mid: #8A8578;
+  --gy-far: #C2BCAC;
+  --gy-lamp: #E07A1F;
+  --gy-lamp-deep: #C2661A;
+}
+
+/* ---- D — dark scene, cream chrome ----------------------------------- */
+/* The page stays canon paper; only the cemetery goes dark, on the argument
+   that an illustration may carry colour the chrome may not. */
+:root[data-palette='d'] {
+  --krk-accent: #E07A1F;
+}
+
+:root[data-palette='d'] .gy-frame {
+  --krk-paper: #241C24;
+  --krk-paper-2: #302632;
+  --krk-ink: #F2ECE0;
+  --krk-ink-soft: #B9AFA2;
+  --krk-ink-faint: #7A7168;
+  --krk-accent: #E6BE6E;
+
+  --gy-near: #F2ECE0;
+  --gy-mid: #8E8296;
+  --gy-far: #4E4152;
+  --gy-lamp: #E6BE6E;
+  --gy-lamp-deep: #C98A44;
+
+  background: var(--krk-paper);
+  color: var(--krk-ink);
+}
