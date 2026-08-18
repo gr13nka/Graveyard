@@ -45,7 +45,6 @@
     const projects = await (await fetch('./data/projects.json')).json();
     await loadDoodles(MOTIFS, './doodles/');
 
-    const years = projects.map((p) => String(p.died).slice(0, 4)).sort();
     const epitaph = mountEpitaph(document.getElementById('epitaph'));
 
     /* Playful register: the kit's default 'calm' dial swallows tap cues
@@ -61,19 +60,48 @@
     }
 
     const sceneEl = document.getElementById('scene');
+    let scene = null;
+    let editor = null;
+    let selected = null;
 
-    mountScene(sceneEl, layOutGraveyard(projects), {
-      heading: {
-        title: 'Graveyard',
-        meta: `${projects.length} projects · ${years[0]}–${years[years.length - 1]}`,
-      },
-      onSelect: (project) => {
-        epitaph.show(project);
-        krk?.play(CUES.tap);
-      },
-    });
+    /* Showing a grave and rebuilding the yard are separate on purpose: an edit
+       redraws the scene while the form stays open in the panel, so rebuild()
+       must never touch the panel. */
+    function show(project) {
+      selected = project?.slug ?? null;
+      if (!project) return;
+      epitaph.show(project);
+      editor?.setSelected(project);
+    }
 
-    mountCandle(sceneEl);
+    function rebuild() {
+      const years = projects.map((p) => String(p.died).slice(0, 4)).sort();
+      scene = mountScene(sceneEl, layOutGraveyard(projects), {
+        heading: {
+          title: 'Graveyard',
+          meta: `${projects.length} projects · ${years[0]}–${years[years.length - 1]}`,
+        },
+        onSelect: (project) => {
+          show(project);
+          krk?.play(CUES.tap);
+        },
+      });
+      /* mountScene clears the frame, so the candle has to go back on after it. */
+      mountCandle(sceneEl);
+      if (selected && projects.some((p) => p.slug === selected)) scene.select(selected);
+      else selected = null;
+    }
+
+    rebuild();
+
+    /* The editor exists only behind ?edit — a visitor never sees an affordance,
+       and finding the URL gets them nothing without a token. */
+    if (new URLSearchParams(location.search).has('edit')) {
+      const { mountEditor } = await import('./js/editor.js');
+      editor = mountEditor(document.getElementById('epitaph'), {
+        projects, rebuild, reselect: show,
+      });
+    }
   </script>
 </body>
 </html>

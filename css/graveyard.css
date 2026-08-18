@@ -660,3 +660,101 @@ html, body { height: 100%; margin: 0; }
   transition: opacity var(--krk-motion-fast) var(--krk-motion-ease);
   will-change: transform;
 }
+
+/* ---- The editor (?edit only) -----------------------------------------
+ * Lives in the epitaph panel, so it inherits the panel's ground and needs no
+ * palette of its own. Nothing here renders unless js/editor.js was mounted,
+ * which only happens behind ?edit.
+ */
+
+.gy-edit-open {
+  float: right;
+  margin: 2px 0 0 var(--krk-space-3);
+  padding: 3px 12px;
+  font-family: var(--krk-font-hand);
+  font-size: var(--krk-text-xs);
+  color: var(--krk-ink-soft);
+  background: none;
+  border: var(--krk-stroke-ui) solid var(--krk-ink-faint);
+  border-radius: 11px 8px 12px 9px / 9px 12px 8px 11px;
+  cursor: pointer;
+  transition: color var(--krk-motion-fast) var(--krk-motion-ease),
+              border-color var(--krk-motion-fast) var(--krk-motion-ease);
+}
+
+.gy-edit-open:hover { color: var(--gy-lamp); border-color: var(--gy-lamp); }
+.gy-edit-open:focus-visible { outline: 2px solid var(--gy-lamp); outline-offset: 2px; }
+
+.gy-form { max-width: 46ch; }
+
+.gy-form__slug {
+  margin: 0 0 var(--krk-space-4);
+  font-family: var(--krk-font-hand);
+  font-size: var(--krk-text-lg);
+  color: var(--gy-lamp);
+}
+
+.gy-form__row { display: block; margin-bottom: var(--krk-space-4); }
+
+.gy-form__label {
+  display: block;
+  margin-bottom: var(--krk-space-1);
+  font-size: var(--krk-text-sm);
+  color: var(--krk-ink-soft);
+}
+
+.gy-form__input {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  font-family: var(--krk-font-sans);
+  font-size: var(--krk-text-base);
+  color: var(--krk-ink);
+  background: var(--krk-paper-2);
+  border: var(--krk-stroke-ui) solid var(--krk-ink-faint);
+  border-radius: 12px 15px 11px 14px / 14px 11px 15px 12px;
+}
+
+.gy-form__input:focus-visible { outline: 2px solid var(--gy-lamp); outline-offset: 2px; }
+
+.gy-form__hint {
+  display: block;
+  margin-top: var(--krk-space-1);
+  font-size: var(--krk-text-xs);
+  color: var(--krk-ink-faint);
+}
+
+.gy-form__actions { display: flex; flex-wrap: wrap; gap: var(--krk-space-2); margin-top: var(--krk-space-4); }
+
+.gy-form__status {
+  margin: var(--krk-space-4) 0 0;
+  min-height: 1.4em;
+  font-size: var(--krk-text-sm);
+  color: var(--gy-lamp);
+}
+
+.gy-btn {
+  padding: 7px 16px;
+  font-family: var(--krk-font-sans);
+  font-size: var(--krk-text-sm);
+  font-weight: 700;
+  color: var(--krk-ink);
+  background: none;
+  border: var(--krk-stroke-ui) solid var(--krk-ink-soft);
+  border-radius: 13px 17px 11px 15px / 15px 11px 17px 13px;
+  cursor: pointer;
+  transition: background-color var(--krk-motion-fast) var(--krk-motion-ease),
+              color var(--krk-motion-fast) var(--krk-motion-ease);
+}
+
+.gy-btn:hover { background: var(--krk-paper-2); }
+.gy-btn:focus-visible { outline: 2px solid var(--gy-lamp); outline-offset: 2px; }
+.gy-btn[disabled] { opacity: 0.5; cursor: default; }
+
+.gy-btn--go { color: var(--gy-lamp); border-color: var(--gy-lamp); }
+.gy-btn--danger { color: var(--krk-danger); border-color: var(--krk-danger); }
+
+.gy-token { margin-top: var(--krk-space-6); font-size: var(--krk-text-sm); }
+.gy-token summary { cursor: pointer; color: var(--krk-ink-soft); }
+.gy-token__note { margin: var(--krk-space-3) 0; color: var(--krk-ink-soft); line-height: 1.5; }
+.gy-token__link { display: inline-block; margin-bottom: var(--krk-space-3); color: var(--gy-lamp); }

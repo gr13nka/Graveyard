@@ -157,6 +157,37 @@ Then link it from your profile README (`<you>/<you>`, `README.md`):
 [⚰︎ my graveyard](https://<you>.github.io/Graveyard/) — projects that didn't make it
 ```
 
+## Editing from the page
+
+Add `?edit` to the URL — on the live site or a local server — click a grave, and
+the panel becomes a form: epitaph, cause, description, name, marker, dates, repo
+link, and an **exhume** button. Changes redraw the yard immediately, so a new
+marker or a corrected date shows up before you save.
+
+**Save commits straight to GitHub.** There is no server and nothing to run: the
+page writes `data/projects.json` through GitHub's Contents API and Pages
+redeploys itself about a minute later.
+
+To let it, it needs a token once:
+
+1. Open `?edit` on your published site and expand **Connect GitHub to save here**.
+2. Follow the link to create a [fine-grained token](https://github.com/settings/personal-access-tokens/new)
+   with **access to only this repository** and exactly one permission —
+   **Contents: read and write**.
+3. Paste it and press connect.
+
+The page works out which repository to commit to from its own URL, so a fork
+needs no configuration. The token is kept in that browser's `localStorage` and
+sent only to `api.github.com` — it is a real credential, so don't do this on a
+shared computer, and there's a **sign out** next to the connect button.
+
+Without a token the editor still works; **Save** downloads `projects.json` and
+you replace the file yourself. That is also what happens when you run it
+locally, where the page has no repository to infer.
+
+Nothing about the editor is visible without `?edit`, and a visitor who finds the
+URL still cannot save anything — writing needs a token only you have.
+
 ## The data file
 
 ```json
@@ -219,12 +250,15 @@ js/
   road.js             the procedurally drawn path
   epitaph.js          the right-hand panel
   candle.js           the candle that replaces the cursor
+  editor.js           the ?edit form; commits via the GitHub API
+  github.js           reading and writing one file through the Contents API
   doodles.js          motif loading and inlining
 doodles/              hand-drawn SVG motifs, stroke-only
 vendor/karakuli/      the Karakuli kit, copied in verbatim, never edited here
 data/projects.json    the graves
 shots/<slug>/         screenshots
 tools/bury.mjs        the burial command
+CLAUDE.md             invariants and traps, for anyone editing the code
 .nojekyll             stops GitHub Pages running the files through Jekyll
 ```
 
