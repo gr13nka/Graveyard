@@ -23,7 +23,7 @@ const LEFT_FIELD = { min: 9, max: 47, cols: 3 };
 const RIGHT_FIELD = { min: 68, max: 92, cols: 2 };
 
 const COL_STEP = 13.5;    // % of scene width between columns in a block
-const ROW_STEP = 104;     // px between rows in a block
+const ROW_STEP = 138;     // px between rows in a block; must clear a marker's height
 const BLOCK_GAP = 104;    // px of empty ground between blocks
 const TOP_MARGIN = 420;   // px of empty sky before the first block
 
