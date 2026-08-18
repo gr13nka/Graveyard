@@ -17,15 +17,11 @@ const ROAD_X = 58;
 const LEFT_FIELD = { min: 13, max: 45 };
 const RIGHT_FIELD = { min: 70, max: 88 };
 
-const ROW_HEIGHT = 178;   // px of vertical rhythm per grave
+const ROW_HEIGHT = 156;   // px of vertical rhythm per grave
 const ROW_JITTER = 62;    // px of wander around that rhythm
-const TOP_MARGIN = 420;   // px of sky above the horizon
-/* Graves stand ON their y, growing upward from it, so the first row has to
-   start far enough below the horizon that the tallest marker doesn't poke
-   into the sky. */
-const FIRST_ROW = 215;
+const TOP_MARGIN = 420;   // px of empty sky before the first grave
 
-const AMBIENT = ['tree', 'grass', 'fence-post'];
+const AMBIENT = ['tree', 'flower-daisy', 'sprout', 'leaf', 'fence-post'];
 
 /* FNV-1a — small, fast, and stable across engines, which is the whole point. */
 function hash(text) {
@@ -81,21 +77,20 @@ export function layOutGraveyard(projects) {
       side,
       variant,
       x: lerp(field.min, field.max, roll(slug, 2)),
-      y: TOP_MARGIN + FIRST_ROW + index * ROW_HEIGHT + (roll(slug, 3) - 0.5) * ROW_JITTER,
-      size: Math.round(lerp(128, 172, roll(slug, 4))),
+      y: TOP_MARGIN + index * ROW_HEIGHT + (roll(slug, 3) - 0.5) * ROW_JITTER,
+      size: Math.round(lerp(132, 190, roll(slug, 4))),
       tilt: lerp(-4.5, 4.5, roll(slug, 5)),
       motifs: ambientFor(slug, side),
     };
   });
 
-  const height = TOP_MARGIN + FIRST_ROW + buried.length * ROW_HEIGHT + 240;
+  const height = TOP_MARGIN + buried.length * ROW_HEIGHT + 260;
   const milestones = milestonesFor(plots);
 
   return {
     plots,
     roadX: ROAD_X,
     height,
-    horizon: TOP_MARGIN,
     milestones,
     lamps: lampsAlong(plots, height, milestones),
   };
@@ -125,7 +120,7 @@ function lampsAlong(plots, height, milestones) {
          Standing them on the path itself is both clear of everything and
          what a lit path actually looks like. */
       x: ROAD_X + (i % 4 === 0 ? -5.5 : 5.5),
-      size: 84,
+      size: 54,
     });
   }
   /* Both stand in the road, so a lamp landing on a year marker covers the one
@@ -172,6 +167,6 @@ function ambientFor(slug, side) {
        growing through it. */
     dx: Math.round(outward * lerp(58, 104, roll(slug, 10 + i))),
     dy: Math.round(lerp(-18, 26, roll(slug, 20 + i))),
-    size: Math.round(lerp(46, 78, roll(slug, 30 + i))),
+    size: Math.round(lerp(34, 62, roll(slug, 30 + i))),
   }));
 }

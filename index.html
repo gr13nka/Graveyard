@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-land="lit">
+<html lang="en" data-palette="b">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -9,26 +9,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&family=Shantell+Sans:wght@400;700&display=swap" rel="stylesheet" />
 
-  <!-- The Karakuli kit is still loaded for its motion layer (bounce curve,
-       entrance keyframes, boil filters) and its type scale. Its component
-       classes are not used: this style draws its own furniture. -->
+  <!-- Load order is load-bearing: karakuli.css assumes tokens.css is present. -->
   <link rel="stylesheet" href="vendor/karakuli/tokens.css" />
+  <link rel="stylesheet" href="vendor/karakuli/karakuli.css" />
   <link rel="stylesheet" href="vendor/karakuli/boil.css" />
   <link rel="stylesheet" href="vendor/karakuli/anim.css" />
-  <link rel="stylesheet" href="css/sunset.css" />
+  <link rel="stylesheet" href="css/palettes.css" />
   <link rel="stylesheet" href="css/graveyard.css" />
 
-  <!-- boil.js injects its filter defs on DOMContentLoaded. Every script here is
-       an ES module, so this page must be served over http — file:// fails
-       silently and boil, entrances and sound simply never run. -->
+  <!-- boil.js injects its filter defs on DOMContentLoaded. Every script here
+       is an ES module, so this page must be served over http — file:// fails
+       silently and the boil, entrances and sound simply never run. -->
   <script type="module" src="vendor/karakuli/boil.js"></script>
 </head>
 <body>
-  <div class="gy-land" id="land">
-    <button type="button" class="gy-land__btn" data-land-key="lit">lit ground</button>
-    <button type="button" class="gy-land__btn" data-land-key="dim">shadowed ground</button>
-  </div>
-
   <main class="gy-app">
     <section id="scene"></section>
     <aside id="epitaph"></aside>
@@ -42,9 +36,9 @@
 
     const MOTIFS = [
       'headstone-round', 'headstone-cross', 'obelisk', 'urn', 'mound',
-      'lantern', 'lantern-glass', 'glow', 'light-pool',
-      'candle', 'candle-flame', 'moon', 'star', 'cloud', 'tree', 'grass',
-      'fence-post', 'arrow-right',
+      'fence-post', 'lantern', 'candle', 'glow', 'light-pool',
+      'moon', 'star', 'cloud', 'spark', 'tree', 'flower-daisy', 'leaf',
+      'sprout', 'arrow-right', 'baton-sleep',
     ];
 
     const projects = await (await fetch('./data/projects.json')).json();
@@ -75,24 +69,6 @@
         krk?.play(CUES.tap);
       },
     });
-
-    /* Both landscapes ship until one is chosen by eye. Everything that differs
-       between them is a token, so this only flips an attribute. */
-    const land = document.getElementById('land');
-    const applyLand = (key) => {
-      document.documentElement.dataset.land = key;
-      land.querySelectorAll('[data-land-key]').forEach((b) =>
-        b.classList.toggle('is-on', b.dataset.landKey === key));
-    };
-    land.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-land-key]');
-      if (btn) applyLand(btn.dataset.landKey);
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === '1') applyLand('lit');
-      if (e.key === '2') applyLand('dim');
-    });
-    applyLand('lit');
   </script>
 </body>
 </html>
