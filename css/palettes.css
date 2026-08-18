@@ -39,6 +39,7 @@
   --gy-far: #4E4152;
   --gy-lamp: #E6BE6E;
   --gy-lamp-deep: #C98A44;
+  --gy-cast: #15101A;
 }
 
 /* ---- B — night, cool indigo ----------------------------------------- */
@@ -73,6 +74,9 @@
   --gy-far: #454B7A;    /* sky, stars, undergrowth — 2.03:1, barely there */
   --gy-lamp: #E6BE6E;   /* lantern flame */
   --gy-lamp-deep: #C98A44; /* the rays and the pool it throws */
+  /* Cast shadows must sit BELOW the ground tone, not above it — --gy-far is
+     a distance tone, and using it here made shadows lighten what they fell on. */
+  --gy-cast: #0D0E1F;
 }
 
 /* ---- C — canon cream ------------------------------------------------ */
@@ -87,6 +91,7 @@
   --gy-far: #C2BCAC;
   --gy-lamp: #E07A1F;
   --gy-lamp-deep: #C2661A;
+  --gy-cast: #B9B0A0;
 }
 
 /* ---- D — dark scene, cream chrome ----------------------------------- */

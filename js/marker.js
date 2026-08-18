@@ -69,6 +69,18 @@ export function markerEl(variant, { name, born, died }) {
   button.className = 'gy-marker';
   button.setAttribute('aria-label', `${name}, ${engravedYears(born, died).join('–')}`);
 
+  /*
+   * The shadow this grave throws when another one is lit near it. It is a
+   * ground blob rather than the marker's own silhouette because these motifs
+   * are stroke-only — headstone-cross in particular is separate open strokes
+   * with no fillable area, so there is nothing to cast. One blob works for
+   * every variant. Invisible until --gy-lit rises above zero.
+   */
+  const cast = doodle('shadow-blob');
+  cast.classList.add('gy-marker__cast');
+  cast.setAttribute('aria-hidden', 'true');
+  button.appendChild(cast);
+
   const svg = doodle(variant);
   svg.classList.add('krk-boil', 'gy-marker__stone');
   engrave(svg, variant, born, died);

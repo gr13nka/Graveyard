@@ -64,7 +64,7 @@ html, body { height: 100%; margin: 0; }
    otherwise a grave with a tree beside it drifts off its own plot. */
 .gy-plot {
   position: absolute;
-  width: var(--gy-size, 150px);
+  width: calc(var(--gy-size, 150px) * var(--gy-zoom, 1));
   transform: translate(-50%, -100%);
   color: var(--gy-near);
 }
@@ -73,8 +73,8 @@ html, body { height: 100%; margin: 0; }
   position: absolute;
   display: block;
   translate: -50% 0;
-  width: var(--gy-size, 44px);
-  height: var(--gy-size, 44px);
+  width: calc(var(--gy-size, 44px) * var(--gy-zoom, 1));
+  height: calc(var(--gy-size, 44px) * var(--gy-zoom, 1));
   color: var(--gy-far);
   pointer-events: none;
 }
@@ -86,7 +86,7 @@ html, body { height: 100%; margin: 0; }
 .gy-marker {
   position: relative;
   display: block;
-  width: var(--gy-size, 120px);
+  width: calc(var(--gy-size, 120px) * var(--gy-zoom, 1));
   padding: 0;
   border: none;
   background: none;
@@ -111,7 +111,37 @@ html, body { height: 100%; margin: 0; }
   width: 100%;
   height: auto;
   overflow: visible;
+  /* Warms toward the lantern colour as --gy-lit rises. Set on the stone only:
+     the name label keeps its own measured colour so lighting can never push
+     text below its contrast floor. */
+  color: color-mix(in oklab, var(--gy-near), var(--gy-lamp) calc(var(--gy-lit, 0) * 62%));
 }
+
+/*
+ * The shadow a nearby grave throws away from the lit one. Anchored at the
+ * stone's base and stretched outward, with the anchor edge deciding the
+ * direction — two classes rather than calc() on transform-origin, which is
+ * fragile once a custom property is involved.
+ */
+.gy-marker__cast {
+  position: absolute;
+  left: 50%;
+  bottom: -6%;
+  width: 78%;
+  height: auto;
+  translate: -50% 0;
+  overflow: visible;
+  fill: var(--gy-cast);
+  stroke: none;
+  opacity: calc(var(--gy-lit, 0) * 0.8);
+  pointer-events: none;
+  transition: opacity var(--krk-motion-slow) var(--krk-motion-ease),
+              scale var(--krk-motion-slow) var(--krk-motion-bounce);
+  scale: calc(1 + var(--gy-lit, 0) * 1.9) 0.34;
+}
+
+.is-cast-right .gy-marker__cast { transform-origin: 12% 100%; }
+.is-cast-left .gy-marker__cast { transform-origin: 88% 100%; }
 
 .gy-engraving {
   /* The motif root sets stroke/fill for its paths; carved text has to opt
@@ -130,6 +160,12 @@ html, body { height: 100%; margin: 0; }
   top: calc(100% + 2px);
   translate: -50% 0;
   white-space: nowrap;
+  /* Three names abreast in a block will collide, so each is capped at its
+     column and opens up on hover. Always-visible names are what made the yard
+     scannable in the first place — truncating beats hiding. */
+  max-width: calc(var(--gy-size, 120px) * var(--gy-zoom, 1));
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: var(--krk-text-sm);
   color: var(--krk-ink-soft);
   /* Always readable. Hover-only names meant finding a project required
@@ -139,7 +175,13 @@ html, body { height: 100%; margin: 0; }
   pointer-events: none;
 }
 
-.gy-marker:hover .gy-marker__name { color: var(--gy-near); }
+.gy-marker:hover .gy-marker__name {
+  color: var(--gy-near);
+  max-width: none;
+  overflow: visible;
+}
+
+.gy-plot:hover { z-index: 9; }
 
 /* ---- Lamp light along the road --------------------------------------
  * The scene's warm light. Amber appears nowhere else in the yard except a
@@ -402,6 +444,11 @@ html, body { height: 100%; margin: 0; }
 
 @media (max-width: 900px) {
   .gy-app { grid-template-columns: 1fr; }
+
+  /* Column steps are percentages, so on a 430px pane they collapse to ~58px
+     while the stones stay 130px and pile up. Shrinking the stones rather than
+     re-laying the blocks keeps one layout to reason about. */
+  .gy-field { --gy-zoom: 0.6; }
   .gy-epitaph {
     position: fixed;
     inset: auto 0 0 0;
@@ -481,3 +528,37 @@ html, body { height: 100%; margin: 0; }
   font-size: var(--krk-text-sm);
   color: var(--gy-mid);
 }
+
+/* ---- Light from the selected grave -----------------------------------
+ * Three nested blobs at stepped opacity, not a radial gradient: canon has no
+ * gradients, and a contour-stepped falloff is how light gets drawn by hand.
+ * Sits in its own layer beneath every stone so it can never paint over one.
+ */
+
+.gy-halo-layer { position: absolute; inset: 0; pointer-events: none; }
+
+.gy-halo {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  scale: 0.6;
+  transition: opacity var(--krk-motion-slow) var(--krk-motion-ease),
+              scale 420ms var(--krk-motion-bounce);
+}
+
+.gy-halo.is-lit { opacity: 1; scale: 1; }
+
+.gy-halo__ring {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  translate: -50% 0;
+  fill: var(--gy-lamp);
+  stroke: none;
+  overflow: visible;
+}
+
+.gy-halo__ring--wide { width: 660px; height: 320px; margin-bottom: -118px; opacity: 0.14; }
+.gy-halo__ring--mid  { width: 450px; height: 220px; margin-bottom: -78px;  opacity: 0.18; }
+.gy-halo__ring--core { width: 260px; height: 128px; margin-bottom: -46px;  opacity: 0.24; }

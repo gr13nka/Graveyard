@@ -47,6 +47,10 @@ function ambientEl({ name, size }) {
 export function mountScene(root, layout, { onSelect, heading } = {}) {
   const { plots, roadX, height, lamps = [], milestones = [] } = layout;
 
+  /* How far the selected grave's light reaches, in px. Bounded on purpose:
+     a falloff that never reaches zero is a global tint, not a light. */
+  const LIGHT_RADIUS = 460;
+
   root.classList.add('gy-frame');
   root.innerHTML = '';
 
@@ -131,6 +135,26 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
     wayLayer.appendChild(el);
   });
 
+  /*
+   * The light a selected grave throws. Its own layer, under every stone, so
+   * the pool never paints over a marker. Three nested blobs at stepped
+   * opacity rather than a radial gradient — canon has no gradients, and a
+   * stepped falloff is how you draw light by hand anyway.
+   */
+  const haloLayer = document.createElement('div');
+  haloLayer.className = 'gy-halo-layer';
+  const halo = document.createElement('div');
+  halo.className = 'gy-halo';
+  halo.setAttribute('aria-hidden', 'true');
+  ['gy-halo__ring gy-halo__ring--wide', 'gy-halo__ring gy-halo__ring--mid', 'gy-halo__ring gy-halo__ring--core']
+    .forEach((cls) => {
+      const ring = doodle('shadow-blob');
+      ring.setAttribute('class', cls);
+      halo.appendChild(ring);
+    });
+  haloLayer.appendChild(halo);
+  field.appendChild(haloLayer);
+
   const plotLayer = document.createElement('div');
   plotLayer.className = 'gy-plots';
   field.appendChild(plotLayer);
@@ -144,6 +168,9 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
     el.style.setProperty('--gy-tilt', `${plot.tilt}deg`);
     el.style.left = `${plot.x}%`;
     el.style.top = `${plot.y}px`;
+    /* Front rows overlap back rows. Done with z-index rather than DOM order so
+       the plots array can stay chronological for milestones and lamps. */
+    el.style.zIndex = String(plot.depth);
 
     plot.motifs.forEach((motif) => {
       const holder = ambientEl(motif);
@@ -159,7 +186,7 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
     });
     el.appendChild(marker);
 
-    byslug.set(plot.project.slug, { el, marker });
+    byslug.set(plot.project.slug, { el, marker, plot });
     plotLayer.appendChild(el);
   });
 
@@ -207,10 +234,53 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
 
   let selected = null;
 
+  /*
+   * Light the yard from wherever the selected grave stands: stones near it
+   * warm toward the lamp colour, and each throws a shadow on the side away
+   * from the light. Percent-based x has to become pixels first, which is why
+   * this re-runs on resize.
+   */
+  function castLight() {
+    const source = selected && byslug.get(selected);
+    if (!source) {
+      halo.classList.remove('is-lit');
+      byslug.forEach(({ el }) => {
+        el.style.setProperty('--gy-lit', '0');
+        el.classList.remove('is-cast-left', 'is-cast-right');
+      });
+      return;
+    }
+
+    const width = scroller.clientWidth || 1;
+    const toPx = (pct) => (pct / 100) * width;
+    const sx = toPx(source.plot.x);
+    const sy = source.plot.y;
+
+    halo.style.left = `${source.plot.x}%`;
+    halo.style.top = `${sy}px`;
+    halo.classList.add('is-lit');
+
+    byslug.forEach(({ el, plot }, slug) => {
+      if (slug === selected) {
+        el.style.setProperty('--gy-lit', '0');
+        el.classList.remove('is-cast-left', 'is-cast-right');
+        return;
+      }
+      const dx = toPx(plot.x) - sx;
+      const dy = plot.y - sy;
+      const reach = Math.max(0, 1 - Math.hypot(dx, dy) / LIGHT_RADIUS);
+      el.style.setProperty('--gy-lit', reach.toFixed(3));
+      el.classList.toggle('is-cast-right', reach > 0 && dx >= 0);
+      el.classList.toggle('is-cast-left', reach > 0 && dx < 0);
+    });
+  }
+
+  new ResizeObserver(castLight).observe(scroller);
+
   function select(slug) {
     if (selected) byslug.get(selected)?.el.classList.remove('is-selected');
     selected = slug;
-    if (!slug) return;
+    if (!slug) { castLight(); return; }
     const entry = byslug.get(slug);
     if (!entry) return;
     entry.el.classList.add('is-selected');
@@ -218,6 +288,7 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
     entry.marker.classList.remove('gy-marker--struck');
     void entry.marker.offsetWidth;
     entry.marker.classList.add('gy-marker--struck');
+    castLight();
   }
 
   return { select, scrollHome };
