@@ -5,21 +5,34 @@
  * and finding the URL gets them nothing, because writing needs a token only
  * the owner has.
  *
- * There is no server. Saving commits data/projects.json through the GitHub
- * Contents API and Pages redeploys itself. Off Pages — locally, or without a
- * token — Save downloads the file instead, so the no-token path is never a
- * dead end.
+ * There is no server. Save commits data/projects.json through the GitHub
+ * Contents API and Pages redeploys itself.
+ *
+ * Why a token at all — this was asked and is worth writing down, because the
+ * obvious instinct is to design it away:
+ *
+ *   - OAuth's web flow needs a client_secret, which a static page cannot hold.
+ *   - OAuth's device flow exists for exactly this case, but GitHub's
+ *     /login/device/code and /login/oauth/access_token send no CORS headers,
+ *     so a browser cannot call them at all. Every workaround is a proxy.
+ *   - The page cannot borrow the visitor's github.com session; that is
+ *     cross-origin by design.
+ *
+ * So the floor is one authorisation, once. After that every save is a single
+ * click. Do not add a download fallback: it once occupied this button and
+ * meant nobody could find the save.
  */
 
 import { repoFromLocation, fileStore } from './github.js';
 
 const TOKEN_KEY = 'gy_token';
+const REPO_KEY = 'gy_repo';
 const DATA_PATH = 'data/projects.json';
 const MARKERS = ['headstone-round', 'headstone-cross', 'obelisk', 'urn', 'mound'];
 
 /* The fields worth editing by hand. Everything else about a grave — where it
-   stands, which undergrowth grows round it — is derived from the slug and has
-   nowhere to be typed. */
+   stands, what grows round it — derives from the slug and has nowhere to be
+   typed. */
 const FIELDS = [
   { key: 'epitaph', label: 'Epitaph', type: 'text', hint: 'One line. The only part anyone reads twice.' },
   { key: 'cause', label: 'Cause of death', type: 'text' },
@@ -40,15 +53,6 @@ const el = (tag, className, text) => {
 
 const serialise = (projects) => `${JSON.stringify(projects, null, 2)}\n`;
 
-function download(projects) {
-  const blob = new Blob([serialise(projects)], { type: 'application/json' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'projects.json';
-  link.click();
-  URL.revokeObjectURL(link.href);
-}
-
 /**
  * Mount the editor over the epitaph panel.
  *
@@ -59,21 +63,15 @@ function download(projects) {
  * @returns {{ setSelected(project): void }}
  */
 export function mountEditor(panel, { projects, rebuild, reselect }) {
-  const coords = repoFromLocation();
   let token = localStorage.getItem(TOKEN_KEY) || '';
+  let coords = repoFromLocation();
   let current = null;
-  let store = null;
 
-  const canCommit = () => Boolean(coords && token);
+  const connected = () => Boolean(coords && token);
 
-  function connectStore() {
-    store = canCommit()
-      ? fileStore({ ...coords, path: DATA_PATH, token })
-      : null;
-  }
-  connectStore();
+  const store = () => fileStore({ ...coords, path: DATA_PATH, token });
 
-  /* ---- the small "edit" handle that lives on the read-only panel ---- */
+  /* ---- the small "edit" handle on the read-only panel ---- */
 
   function setSelected(project) {
     current = project;
@@ -90,10 +88,9 @@ export function mountEditor(panel, { projects, rebuild, reselect }) {
     panel.innerHTML = '';
     panel.classList.remove('is-empty');
     const form = el('div', 'gy-form');
-
     form.appendChild(el('p', 'gy-form__slug', project.slug));
-    const inputs = new Map();
 
+    const inputs = new Map();
     for (const field of FIELDS) {
       const row = el('label', 'gy-form__row');
       row.appendChild(el('span', 'gy-form__label', field.label));
@@ -114,82 +111,87 @@ export function mountEditor(panel, { projects, rebuild, reselect }) {
       input.value = project[field.key] ?? '';
       inputs.set(field.key, input);
       row.appendChild(input);
-
       if (field.hint) row.appendChild(el('span', 'gy-form__hint', field.hint));
       form.appendChild(row);
     }
 
     const status = el('p', 'gy-form__status');
-    const actions = el('div', 'gy-form__actions');
+    const connect = connectPanel(status);
 
-    const save = el('button', 'gy-btn gy-btn--go', canCommit() ? 'save to GitHub' : 'download');
+    const save = el('button', 'gy-btn gy-btn--go', 'Save');
     save.type = 'button';
     const cancel = el('button', 'gy-btn', 'cancel');
     cancel.type = 'button';
     const exhume = el('button', 'gy-btn gy-btn--danger', 'exhume');
     exhume.type = 'button';
 
+    const actions = el('div', 'gy-form__actions');
     actions.append(save, cancel, exhume);
 
+    /* Typed values land on the project before anything else happens, so a
+       failed save still leaves the form — and the scene — showing what the
+       user wrote. Losing their text is the one outcome worth engineering
+       against. */
     const apply = () => {
       for (const [key, input] of inputs) {
         const value = input.value.trim();
         if (value) project[key] = value;
         else delete project[key];
       }
-      /* name and slug are required for the grave to exist at all */
       if (!project.name) project.name = project.slug;
     };
 
-    save.addEventListener('click', async () => {
+    save.addEventListener('click', () => {
       apply();
       rebuild();
-      await commit(status, save, `Rewrite ${project.slug}'s epitaph`);
+      commit(status, save, connect, `Rewrite ${project.slug}'s epitaph`);
     });
 
-    cancel.addEventListener('click', () => closeForm());
+    cancel.addEventListener('click', () => {
+      if (current) reselect(current);
+      else panel.innerHTML = '';
+    });
 
-    exhume.addEventListener('click', async () => {
+    exhume.addEventListener('click', () => {
       if (!confirm(`Exhume ${project.name}? The grave and its entry go away.`)) return;
       const at = projects.indexOf(project);
       if (at !== -1) projects.splice(at, 1);
       current = null;
       rebuild();
-      await commit(status, exhume, `Exhume ${project.slug}`);
-      closeForm();
+      commit(status, exhume, connect, `Exhume ${project.slug}`);
     });
 
-    form.append(status, actions, tokenPanel(status, save));
+    form.append(actions, status, connect.box);
     panel.appendChild(form);
-  }
-
-  function closeForm() {
-    if (current) reselect(current);
-    else panel.innerHTML = '';
   }
 
   /* ---- saving ---- */
 
-  async function commit(status, button, message) {
-    if (!store) {
-      download(projects);
+  async function commit(status, button, connect, message) {
+    if (!connected()) {
+      connect.reveal();
       status.textContent = coords
-        ? 'Downloaded. Add a token below to commit straight to GitHub instead.'
-        : 'Downloaded — replace data/projects.json with it. Committing needs the site served from GitHub Pages.';
+        ? 'One step first: GitHub needs to let this page write. It takes a minute, once.'
+        : 'Tell it which repository to commit to, below.';
       return;
     }
 
     button.disabled = true;
     status.textContent = 'saving…';
     try {
-      await store.read();                       // refresh the sha we write against
-      await store.write(serialise(projects), message);
-      status.textContent = 'Committed. GitHub Pages rebuilds in about a minute.';
+      const file = store();
+      await file.read();                    // refresh the sha we write against
+      await file.write(serialise(projects), message);
+      status.textContent = location.hostname.endsWith('github.io')
+        ? 'Saved. GitHub Pages rebuilds in about a minute.'
+        : 'Saved to GitHub. Run git pull — your local copy is now behind.';
+      connect.collapse();
     } catch (error) {
       if (error.kind === 'conflict') {
-        status.textContent = 'The file changed on GitHub since this page loaded. Reload, then edit again.';
+        status.textContent = 'The file changed on GitHub since this page loaded. Reload and edit again — your text is still here.';
       } else if (error.kind === 'auth') {
-        status.textContent = `${error.message} Replace it below.`;
+        status.textContent = error.message;
+        connect.reveal();
       } else {
         status.textContent = error.message;
       }
@@ -198,46 +200,73 @@ export function mountEditor(panel, { projects, rebuild, reselect }) {
     }
   }
 
-  /* ---- the token, asked for once ---- */
+  /* ---- connecting, once ---- */
 
-  function tokenPanel(status, save) {
-    const box = el('details', 'gy-token');
-    box.appendChild(el('summary', null, canCommit() ? 'GitHub token — connected' : 'Connect GitHub to save here'));
+  function connectPanel(status) {
+    const box = el('section', 'gy-connect');
+    const body = el('div', 'gy-connect__body');
+    const summary = el('button', 'gy-connect__summary');
+    summary.type = 'button';
 
-    if (!coords) {
-      box.appendChild(el('p', 'gy-token__note',
-        'This page is not being served from GitHub Pages, so it cannot tell which '
-        + 'repository to commit to. Save downloads the file instead.'));
-      return box;
+    const render = () => {
+      box.classList.toggle('is-done', connected());
+      summary.textContent = connected()
+        ? `connected to ${coords.owner}/${coords.repo} · change`
+        : 'Connect GitHub so Save can write';
+    };
+
+    summary.addEventListener('click', () => box.classList.toggle('is-open'));
+
+    /* Off Pages — localhost, a custom domain — the URL carries no repository,
+       so ask rather than falling back to something that isn't saving. */
+    let repoInput = null;
+    if (!coords || localStorage.getItem(REPO_KEY)) {
+      const row = el('label', 'gy-form__row');
+      row.appendChild(el('span', 'gy-form__label', 'Repository'));
+      repoInput = el('input', 'gy-form__input');
+      repoInput.placeholder = 'owner/name';
+      repoInput.value = localStorage.getItem(REPO_KEY)
+        || (coords ? `${coords.owner}/${coords.repo}` : '');
+      row.appendChild(repoInput);
+      body.appendChild(row);
     }
 
-    box.appendChild(el('p', 'gy-token__note',
-      `Committing to ${coords.owner}/${coords.repo}. Create a fine-grained token with `
-      + 'access to only that repository and one permission — Contents: read and write. '
-      + 'It is kept in this browser and sent only to api.github.com. Do not do this on a '
-      + 'shared computer.'));
+    body.appendChild(el('p', 'gy-connect__note',
+      'Create a fine-grained token with access to only this repository, and one '
+      + 'permission — Contents: read and write. It is kept in this browser and sent '
+      + 'only to api.github.com. Not on a shared computer.'));
 
-    const link = el('a', 'gy-token__link', 'create a token on GitHub');
+    const link = el('a', 'gy-connect__link', 'create the token on GitHub →');
     link.href = 'https://github.com/settings/personal-access-tokens/new';
     link.target = '_blank';
     link.rel = 'noreferrer noopener';
-    box.appendChild(link);
+    body.appendChild(link);
 
+    const field = el('label', 'gy-form__row');
+    field.appendChild(el('span', 'gy-form__label', 'Token'));
     const input = el('input', 'gy-form__input');
     input.type = 'password';
     input.placeholder = 'github_pat_…';
     input.value = token;
-    box.appendChild(input);
+    field.appendChild(input);
+    body.appendChild(field);
 
-    const row = el('div', 'gy-form__actions');
-    const connect = el('button', 'gy-btn gy-btn--go', 'connect');
-    connect.type = 'button';
-    connect.addEventListener('click', () => {
+    const done = el('button', 'gy-btn gy-btn--go', 'connect');
+    done.type = 'button';
+    done.addEventListener('click', () => {
+      const repo = repoInput?.value.trim();
+      if (repo && repo.includes('/')) {
+        localStorage.setItem(REPO_KEY, repo);
+        const [owner, name] = repo.split('/');
+        coords = { owner, repo: name };
+      }
       token = input.value.trim();
-      localStorage.setItem(TOKEN_KEY, token);
-      connectStore();
-      save.textContent = canCommit() ? 'save to GitHub' : 'download';
-      status.textContent = canCommit() ? 'Connected.' : 'No token — Save will download.';
+      if (token) localStorage.setItem(TOKEN_KEY, token);
+      render();
+      status.textContent = connected()
+        ? 'Connected. Press Save.'
+        : 'Still missing a token.';
+      if (connected()) box.classList.remove('is-open');
     });
 
     const forget = el('button', 'gy-btn gy-btn--danger', 'sign out');
@@ -246,14 +275,32 @@ export function mountEditor(panel, { projects, rebuild, reselect }) {
       token = '';
       localStorage.removeItem(TOKEN_KEY);
       input.value = '';
-      connectStore();
-      save.textContent = 'download';
+      render();
+      box.classList.add('is-open');
       status.textContent = 'Token cleared from this browser.';
     });
 
-    row.append(connect, forget);
-    box.appendChild(row);
-    return box;
+    const row = el('div', 'gy-form__actions');
+    row.append(done, forget);
+    body.appendChild(row);
+
+    box.append(summary, body);
+    render();
+    /* Open until it is done: this is the one thing between the user and a
+       working Save, so it must not be something they have to go looking for. */
+    if (!connected()) box.classList.add('is-open');
+
+    return {
+      box,
+      reveal() {
+        box.classList.add('is-open', 'is-wanted');
+        input.focus();
+      },
+      collapse() {
+        box.classList.remove('is-open', 'is-wanted');
+        render();
+      },
+    };
   }
 
   return { setSelected };

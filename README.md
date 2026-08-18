@@ -164,29 +164,35 @@ the panel becomes a form: epitaph, cause, description, name, marker, dates, repo
 link, and an **exhume** button. Changes redraw the yard immediately, so a new
 marker or a corrected date shows up before you save.
 
-**Save commits straight to GitHub.** There is no server and nothing to run: the
-page writes `data/projects.json` through GitHub's Contents API and Pages
-redeploys itself about a minute later.
+**Save commits straight to GitHub.** No server, nothing to run: the page writes
+`data/projects.json` through GitHub's Contents API and Pages redeploys itself
+about a minute later.
 
-To let it, it needs a token once:
+GitHub will not let an anonymous page write to a repository, so there is exactly
+one setup step, once:
 
-1. Open `?edit` on your published site and expand **Connect GitHub to save here**.
-2. Follow the link to create a [fine-grained token](https://github.com/settings/personal-access-tokens/new)
-   with **access to only this repository** and exactly one permission —
+1. Open `?edit`, and the **Connect GitHub so Save can write** panel is already
+   open — it is the only thing between you and a working Save.
+2. Follow the link to create a
+   [fine-grained token](https://github.com/settings/personal-access-tokens/new)
+   with **access to only this repository** and one permission —
    **Contents: read and write**.
-3. Paste it and press connect.
+3. Paste it, press connect. Every save after that is a single click.
 
 The page works out which repository to commit to from its own URL, so a fork
-needs no configuration. The token is kept in that browser's `localStorage` and
-sent only to `api.github.com` — it is a real credential, so don't do this on a
-shared computer, and there's a **sign out** next to the connect button.
+needs no configuration. Served from somewhere that can't say — localhost, a
+custom domain — the panel asks for `owner/name` once as well.
 
-Without a token the editor still works; **Save** downloads `projects.json` and
-you replace the file yourself. That is also what happens when you run it
-locally, where the page has no repository to infer.
+The token is a real credential: it lives in that browser's `localStorage` and is
+sent only to `api.github.com`. Don't do this on a shared computer; there's a
+**sign out** beside the connect button.
 
 Nothing about the editor is visible without `?edit`, and a visitor who finds the
-URL still cannot save anything — writing needs a token only you have.
+URL still cannot save anything.
+
+> There is deliberately no "download the file" fallback. An earlier version had
+> one, and because it also renamed the Save button whenever it couldn't commit,
+> the only thing anyone could find was a download button and no way to save.
 
 ## The data file
 

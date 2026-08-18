@@ -82,6 +82,20 @@ Two deliberate departures from the kit, both documented in `README.md` so they d
   the GitHub Contents API straight from the browser — there is no server, and adding one
   would be a step backwards.
 
+**Why the editor asks for a token, and why you can't design it away.** This gets questioned
+every time. A commit needs a credential, and neither way of getting one without the user
+pasting it can work here: OAuth's web flow needs a `client_secret` a static page cannot
+hold, and OAuth's device flow — built for exactly this case — is served from GitHub
+endpoints that send **no CORS headers**, so a browser cannot call them at all. The page also
+cannot borrow the visitor's github.com session; that is cross-origin by design. Every
+workaround is a proxy, which is a server. The floor is one authorisation, once.
+
+**Save must always say Save.** It shipped once as a button that renamed itself to
+"download" whenever it couldn't commit, with the connect step hidden in a collapsed
+`<details>` — so the first thing anyone saw was a download button and no way to save. Do not
+reintroduce a fallback that takes over the primary action. A failed save keeps the user's
+text in the form and says what went wrong; that is what protects their work.
+
 **`btoa` alone corrupts non-ASCII.** Epitaphs contain em dashes and Cyrillic. Anything
 encoding content for the GitHub API must go through `TextEncoder` first, and anything
 decoding must come back through `TextDecoder`.

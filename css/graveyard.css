@@ -754,7 +754,51 @@ html, body { height: 100%; margin: 0; }
 .gy-btn--go { color: var(--gy-lamp); border-color: var(--gy-lamp); }
 .gy-btn--danger { color: var(--krk-danger); border-color: var(--krk-danger); }
 
-.gy-token { margin-top: var(--krk-space-6); font-size: var(--krk-text-sm); }
-.gy-token summary { cursor: pointer; color: var(--krk-ink-soft); }
-.gy-token__note { margin: var(--krk-space-3) 0; color: var(--krk-ink-soft); line-height: 1.5; }
-.gy-token__link { display: inline-block; margin-bottom: var(--krk-space-3); color: var(--gy-lamp); }
+/* The connect step. Open until it is done, because it is the one thing between
+   the user and a working Save — the previous version hid it in a collapsed
+   <details> and nobody could find it. */
+
+.gy-connect {
+  margin-top: var(--krk-space-6);
+  border: var(--krk-stroke-ui) solid var(--krk-ink-faint);
+  border-radius: 14px 18px 12px 16px / 16px 12px 18px 14px;
+  padding: var(--krk-space-3) var(--krk-space-4);
+}
+
+.gy-connect.is-done { border-color: transparent; padding: 0; }
+
+/* Pressing Save unconnected points here rather than doing something else. */
+.gy-connect.is-wanted { border-color: var(--gy-lamp); }
+
+.gy-connect__summary {
+  display: block;
+  width: 100%;
+  padding: 0;
+  text-align: left;
+  font-family: var(--krk-font-sans);
+  font-size: var(--krk-text-sm);
+  font-weight: 700;
+  color: var(--gy-lamp);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.gy-connect.is-done .gy-connect__summary { color: var(--krk-ink-faint); font-weight: 500; }
+.gy-connect__summary:focus-visible { outline: 2px solid var(--gy-lamp); outline-offset: 3px; }
+
+.gy-connect__body { display: none; padding-top: var(--krk-space-3); }
+.gy-connect.is-open .gy-connect__body { display: block; }
+
+.gy-connect__note {
+  margin: 0 0 var(--krk-space-3);
+  font-size: var(--krk-text-sm);
+  color: var(--krk-ink-soft);
+  line-height: 1.5;
+}
+
+.gy-connect__link {
+  display: inline-block;
+  margin-bottom: var(--krk-space-3);
+  color: var(--gy-lamp);
+}
