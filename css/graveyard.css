@@ -562,3 +562,65 @@ html, body { height: 100%; margin: 0; }
 .gy-halo__ring--wide { width: 660px; height: 320px; margin-bottom: -118px; opacity: 0.14; }
 .gy-halo__ring--mid  { width: 450px; height: 220px; margin-bottom: -78px;  opacity: 0.18; }
 .gy-halo__ring--core { width: 260px; height: 128px; margin-bottom: -46px;  opacity: 0.24; }
+
+/* ---- The candle you carry --------------------------------------------
+ * Only inside the yard. Over the epitaph panel the native cursor comes back,
+ * so text stays selectable and the repo link still shows a pointer — a custom
+ * cursor over prose is where this kind of thing starts feeling broken.
+ *
+ * Gated on a fine pointer: a touch device has no hover to drive the flame, and
+ * `cursor: none` there would just remove the cursor for keyboard/mouse users
+ * who plug in later.
+ */
+
+@media (hover: hover) and (pointer: fine) {
+  .gy-frame { cursor: none; }
+  .gy-frame .gy-marker { cursor: none; }
+}
+
+.gy-candle {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 40;
+  width: 58px;
+  height: 58px;
+  /* The flame sits above and slightly right of the true pointer, the way a
+     held candle would — the hotspot is the pointer, not the wax. */
+  margin: -50px 0 0 -15px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--krk-motion-fast) var(--krk-motion-ease);
+}
+
+.gy-candle.is-held { opacity: 1; }
+
+.gy-candle svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+
+.gy-candle__body { color: var(--gy-near); }
+
+.gy-candle__glow {
+  color: var(--gy-lamp);
+  scale: 1.35;
+  opacity: 0.75;
+  animation: gy-flicker 2.6s steps(1) infinite;
+}
+
+/* Touch devices never see the candle, so it must not sit frozen mid-screen. */
+@media (hover: none), (pointer: coarse) {
+  .gy-candle { display: none; }
+}
+
+/* The candle's pool of light lives in the scene, under the stones, not on the
+   cursor — a glow drawn at cursor level would paint over the graves it is
+   meant to be lighting. Smaller and dimmer than the selection halo: one flame
+   in a hand, not a standing memorial. */
+.gy-halo--candle {
+  left: 0;
+  top: 0;
+  /* Moved with transform every frame, so nothing here may transition it. */
+  transition: opacity var(--krk-motion-fast) var(--krk-motion-ease);
+  will-change: transform;
+}
+.gy-halo--candle .gy-halo__ring--mid { width: 400px; height: 196px; margin-bottom: -70px; opacity: 0.13; }
+.gy-halo--candle .gy-halo__ring--core { width: 224px; height: 112px; margin-bottom: -40px; opacity: 0.19; }

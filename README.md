@@ -154,6 +154,12 @@ lanterns sit between blocks.
 within about 460px warm toward the lantern colour, and each of them throws a
 shadow on the side away from the light. Graves beyond that are untouched.
 
+**You carry a candle.** Inside the yard the pointer becomes a lit candle with
+its own smaller pool of light, and the stones respond to it as it moves. Where
+both lights reach a stone, the stronger one wins and the shadow points away
+from that one, so the grave you picked stays lit when you wander off. Over the
+epitaph panel the normal cursor returns; touch devices never see the candle.
+
 ## Project structure
 
 ```

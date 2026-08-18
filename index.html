@@ -33,6 +33,7 @@
     import { layOutGraveyard } from './js/plots.js';
     import { mountScene } from './js/scene.js';
     import { mountEpitaph } from './js/epitaph.js';
+    import { mountCandle } from './js/candle.js';
 
     const MOTIFS = [
       'headstone-round', 'headstone-cross', 'obelisk', 'urn', 'mound',
@@ -59,7 +60,9 @@
       /* uisfx unreachable — the page stays silent and fully usable. */
     }
 
-    mountScene(document.getElementById('scene'), layOutGraveyard(projects), {
+    const sceneEl = document.getElementById('scene');
+
+    mountScene(sceneEl, layOutGraveyard(projects), {
       heading: {
         title: 'Graveyard',
         meta: `${projects.length} projects · ${years[0]}–${years[years.length - 1]}`,
@@ -69,6 +72,8 @@
         krk?.play(CUES.tap);
       },
     });
+
+    mountCandle(sceneEl);
   </script>
 </body>
 </html>

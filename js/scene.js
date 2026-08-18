@@ -47,9 +47,12 @@ function ambientEl({ name, size }) {
 export function mountScene(root, layout, { onSelect, heading } = {}) {
   const { plots, roadX, height, lamps = [], milestones = [] } = layout;
 
-  /* How far the selected grave's light reaches, in px. Bounded on purpose:
-     a falloff that never reaches zero is a global tint, not a light. */
+  /* How far each light reaches, in px. Bounded on purpose: a falloff that
+     never reaches zero is a global tint, not a light. The carried candle is
+     the smaller of the two — it is one flame, not a standing memorial. */
   const LIGHT_RADIUS = 460;
+  const CANDLE_RADIUS = 330;
+  const LIGHT_STEPS = 10;   // how many discrete brightness levels a stone can take
 
   root.classList.add('gy-frame');
   root.innerHTML = '';
@@ -153,6 +156,17 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
       halo.appendChild(ring);
     });
   haloLayer.appendChild(halo);
+
+  const candleHalo = document.createElement('div');
+  candleHalo.className = 'gy-halo gy-halo--candle';
+  candleHalo.setAttribute('aria-hidden', 'true');
+  ['gy-halo__ring gy-halo__ring--mid', 'gy-halo__ring gy-halo__ring--core'].forEach((cls) => {
+    const ring = doodle('shadow-blob');
+    ring.setAttribute('class', cls);
+    candleHalo.appendChild(ring);
+  });
+  haloLayer.appendChild(candleHalo);
+
   field.appendChild(haloLayer);
 
   const plotLayer = document.createElement('div');
@@ -234,48 +248,97 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
 
   let selected = null;
 
+  /* Where the pointer is, in VIEWPORT coordinates, or null when it is outside
+     the yard. Stored unconverted on purpose: the field position of a fixed
+     pointer changes as the yard scrolls under it, so the conversion has to
+     happen at use time, not at capture time. */
+  let pointer = null;
+
   /*
-   * Light the yard from wherever the selected grave stands: stones near it
-   * warm toward the lamp colour, and each throws a shadow on the side away
-   * from the light. Percent-based x has to become pixels first, which is why
-   * this re-runs on resize.
+   * Light the yard from every source at once: the grave you picked, which
+   * stays lit whether or not you are near it, and the candle you are carrying.
+   * A stone takes whichever light reaches it more strongly and throws its
+   * shadow away from that one, so walking the candle past a lit grave hands
+   * the shadow over rather than fighting it.
+   *
+   * Percent-based x has to become pixels first, which is why this re-runs on
+   * resize.
    */
   function castLight() {
-    const source = selected && byslug.get(selected);
-    if (!source) {
-      halo.classList.remove('is-lit');
-      byslug.forEach(({ el }) => {
-        el.style.setProperty('--gy-lit', '0');
-        el.classList.remove('is-cast-left', 'is-cast-right');
-      });
-      return;
-    }
-
     const width = scroller.clientWidth || 1;
     const toPx = (pct) => (pct / 100) * width;
-    const sx = toPx(source.plot.x);
-    const sy = source.plot.y;
 
-    halo.style.left = `${source.plot.x}%`;
-    halo.style.top = `${sy}px`;
-    halo.classList.add('is-lit');
+    const sources = [];
+    const chosen = selected && byslug.get(selected);
+    if (chosen) {
+      sources.push({ x: toPx(chosen.plot.x), y: chosen.plot.y, radius: LIGHT_RADIUS, slug: selected });
+      halo.style.left = `${chosen.plot.x}%`;
+      halo.style.top = `${chosen.plot.y}px`;
+    }
+    halo.classList.toggle('is-lit', Boolean(chosen));
 
-    byslug.forEach(({ el, plot }, slug) => {
-      if (slug === selected) {
-        el.style.setProperty('--gy-lit', '0');
-        el.classList.remove('is-cast-left', 'is-cast-right');
-        return;
+    if (pointer) {
+      const box = scroller.getBoundingClientRect();
+      const cx = pointer.x - box.left;
+      const cy = pointer.y - box.top + scroller.scrollTop;
+      sources.push({ x: cx, y: cy, radius: CANDLE_RADIUS, slug: null });
+      /* transform, not left/top: this moves every frame, and left/top would
+         force a layout pass on the whole field each time. */
+      candleHalo.style.transform = `translate3d(${cx.toFixed(1)}px, ${cy.toFixed(1)}px, 0)`;
+    }
+    candleHalo.classList.toggle('is-lit', Boolean(pointer));
+
+    byslug.forEach((entry, slug) => {
+      const { el, plot } = entry;
+      let best = 0;
+      let dir = 0;
+      for (const source of sources) {
+        /* The selected grave does not light itself — it would glow at its own
+           feet and cast a shadow from a light standing inside it. */
+        if (source.slug === slug) continue;
+        const dx = toPx(plot.x) - source.x;
+        const reach = Math.max(0, 1 - Math.hypot(dx, plot.y - source.y) / source.radius);
+        if (reach > best) { best = reach; dir = dx; }
       }
-      const dx = toPx(plot.x) - sx;
-      const dy = plot.y - sy;
-      const reach = Math.max(0, 1 - Math.hypot(dx, dy) / LIGHT_RADIUS);
-      el.style.setProperty('--gy-lit', reach.toFixed(3));
-      el.classList.toggle('is-cast-right', reach > 0 && dx >= 0);
-      el.classList.toggle('is-cast-left', reach > 0 && dx < 0);
+
+      /*
+       * Quantised, and only written when it actually changes. --gy-lit feeds a
+       * color-mix on the stone, and the stone carries the boil filter, so every
+       * distinct value forces that filter to re-rasterise. Continuous values
+       * meant re-filtering every stone on every frame — measured at ~40ms a
+       * frame while the pointer moved, against ~16ms idle. In steps, most
+       * frames write nothing at all, and stepped falloff is the look already:
+       * the halos are drawn as discrete rings for the same reason.
+       */
+      const lit = Math.round(best * LIGHT_STEPS) / LIGHT_STEPS;
+      const cast = lit > 0 ? (dir >= 0 ? 'right' : 'left') : 'none';
+      if (lit === entry.lit && cast === entry.cast) return;
+      entry.lit = lit;
+      entry.cast = cast;
+      el.style.setProperty('--gy-lit', String(lit));
+      el.classList.toggle('is-cast-right', cast === 'right');
+      el.classList.toggle('is-cast-left', cast === 'left');
     });
   }
 
   new ResizeObserver(castLight).observe(scroller);
+
+  /* Pointer position is read in viewport space and used in field space, so it
+     has to survive scrolling — hence the scrollTop term. Throttled to a frame:
+     pointermove fires far more often than anything here needs to run. */
+  let pendingLight = 0;
+  const queueLight = () => {
+    if (pendingLight) return;
+    pendingLight = requestAnimationFrame(() => { pendingLight = 0; castLight(); });
+  };
+
+  scroller.addEventListener('pointermove', (event) => {
+    pointer = { x: event.clientX, y: event.clientY };
+    queueLight();
+  });
+
+  scroller.addEventListener('pointerleave', () => { pointer = null; queueLight(); });
+  scroller.addEventListener('scroll', () => { if (pointer) queueLight(); }, { passive: true });
 
   function select(slug) {
     if (selected) byslug.get(selected)?.el.classList.remove('is-selected');
