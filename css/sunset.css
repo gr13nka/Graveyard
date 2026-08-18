@@ -1,0 +1,80 @@
+/*
+ * Sunset — the flat palette, sampled from the bedroom reference.
+ * -----------------------------------------------------------------------
+ * Three fills carry the whole picture: a lit orange, a violet-blue shadow,
+ * and an electric night sky, all bound together by one near-black outline.
+ *
+ * This is deliberately NOT Karakuli. Filled shapes, heavy outlines and large
+ * saturated fields invert that system's paper-and-ink structure. The
+ * Karakuli-lineage version of this site is frozen at variants/indigo/.
+ *
+ * Every colour pairing below was measured, because this palette fails WCAG by
+ * default: outline-on-sky is 1.80:1, orange-on-violet 2.51:1, orange-on-sky
+ * 3.81:1. Only near-black-on-orange (6.85:1) is comfortably legible, so text
+ * placement follows the surface rather than taste.
+ */
+
+:root {
+  --gy-sky: #2B00C3;      /* night sky, and the epitaph panel */
+  --gy-ground: #F07245;   /* moonlit ground */
+  --gy-shadow: #563EC3;   /* cast shadow, and the shadowed ground */
+  --gy-outline: #09002E;  /* every outline in the scene */
+  --gy-moon: #D89179;
+  --gy-coral: #F15864;    /* the sunset stripe, and the selected grave */
+  --gy-ink-pale: #F2ECE0; /* 9.44:1 on the sky */
+  /* Secondary text on the sky. The moon's tan (#D89179) was doing this job and
+     measures 4.36:1 — just under the floor. Illustration colours and text
+     colours are not the same set, even when they want to look related. */
+  --gy-ink-warm: #FFB694; /* 6.54:1 on the sky */
+  --gy-link: #FF8A5C;     /* 4.78:1 on the sky — plain #F07245 is 3.81 and fails */
+
+  --gy-outline-w: 3;
+  --gy-horizon: 420px;    /* must match TOP_MARGIN in js/plots.js */
+}
+
+/* ---- The two landscapes ---------------------------------------------
+ * Everything that differs between them is a token, so no component needs to
+ * know which mode is active. --gy-on-ground is the one that matters: it keeps
+ * grave names, year markers and engraved dates legible in both.
+ */
+
+:root[data-land='lit'] {
+  --gy-plane: var(--gy-ground);
+  --gy-grave-fill: var(--gy-ground);   /* graves separate by outline, not hue */
+  --gy-grave-shade: var(--gy-shadow);
+  --gy-on-ground: var(--gy-outline);   /* 6.85:1 */
+  --gy-road-fill: #D85C39;
+  --gy-plant-fill: var(--gy-ground);
+  --gy-pool-opacity: 0;
+}
+
+:root[data-land='dim'] {
+  --gy-plane: var(--gy-shadow);
+  --gy-grave-fill: #CFC6F8;            /* 4.56:1 against the violet ground */
+  --gy-grave-shade: #A594F0;
+  --gy-on-ground: var(--gy-ink-pale);  /* 6.21:1 */
+  --gy-road-fill: #46339F;
+  --gy-plant-fill: #7B67D6;
+  --gy-pool-opacity: 1;
+}
+
+/* ---- How a flat motif is painted -------------------------------------
+ * Each file carries its silhouette twice: once as .p-fill and again as
+ * .p-edge. The shade sits between them, so it can tint the shape without ever
+ * painting over its own outline. Colour comes entirely from CSS, which is why
+ * one set of files serves every state the scene needs.
+ */
+
+.gy-svg .p-fill { fill: var(--gy-fill, var(--gy-grave-fill)); stroke: none; }
+.gy-svg .p-shade { fill: var(--gy-shade, var(--gy-grave-shade)); stroke: none; }
+
+.gy-svg .p-edge {
+  fill: none;
+  stroke: var(--gy-outline);
+  stroke-width: var(--gy-outline-w);
+  vector-effect: non-scaling-stroke;
+}
+
+/* Outlines are the load-bearing element of this style, so they must not thin
+   out as a motif is scaled down. */
+.gy-svg { overflow: visible; }

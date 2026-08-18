@@ -7,7 +7,7 @@
  * inside the carved area, boil wiring — is this module's business.
  */
 
-import { doodle, stack } from './doodles.js';
+import { doodle } from './doodles.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -69,14 +69,6 @@ export function markerEl(variant, { name, born, died }) {
   button.className = 'gy-marker';
   button.setAttribute('aria-label', `${name}, ${engravedYears(born, died).join('–')}`);
 
-  /* The cast shadow is the marker's own silhouette laid flat by CSS, not a
-     second drawing — so a grave and its shadow can never disagree. It goes in
-     first so the stone stands on top of it. */
-  const cast = doodle(variant);
-  cast.classList.add('gy-marker__cast');
-  cast.setAttribute('aria-hidden', 'true');
-  button.appendChild(cast);
-
   const svg = doodle(variant);
   svg.classList.add('krk-boil', 'gy-marker__stone');
   engrave(svg, variant, born, died);
@@ -84,7 +76,8 @@ export function markerEl(variant, { name, born, died }) {
 
   /* The candle only exists while this grave is the selected one — it is the
      colour moment, and it sprouts rather than fades in. */
-  const flame = stack(['candle', 'candle-flame'], 'gy-marker__candle');
+  const flame = doodle('candle');
+  flame.classList.add('gy-marker__candle', 'krk-boil');
   button.appendChild(flame);
 
   const label = document.createElement('span');

@@ -4,9 +4,10 @@
  * Owns its own markup and its entrance. Callers only ever say show(project)
  * or showEmpty().
  *
- * Screenshots get the same heavy outline and organic radius as everything else
- * in this style, so a photo sits in the page like a pinned print rather than a
- * floating tile.
+ * Screenshots are the one thing here with no Karakuli precedent: canon covers
+ * doodles and washes, never a raster image. They are framed the way a
+ * .krk-card--line is — 1.5px ink hairline, organic radius, no shadow — so a
+ * photo sits in the page like a pinned print rather than a floating tile.
  */
 
 import { doodle } from './doodles.js';
@@ -46,7 +47,8 @@ export function mountEpitaph(root) {
   }
 
   function showEmpty() {
-    const cat = doodle('headstone-round');
+    /* Батон, the loaf cat — canon's mascot for rest and quiet empty states. */
+    const cat = doodle('baton-sleep');
     cat.classList.add('krk-boil');
     const art = block('div', 'gy-epitaph__empty-art krk-enter-sprout');
     art.appendChild(cat);
@@ -85,7 +87,7 @@ export function mountEpitaph(root) {
       parts.push(link);
     }
 
-    parts.push(block('hr', 'gy-epitaph__rule krk-enter-rise'));
+    parts.push(block('hr', 'krk-divider krk-enter-rise'));
 
     if (project.description) {
       parts.push(block('p', 'gy-epitaph__body krk-enter-rise', project.description));

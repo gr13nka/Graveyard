@@ -32,22 +32,5 @@ export function doodle(name) {
   if (!source) throw new Error(`doodle "${name}" not loaded — add it to loadDoodles()`);
   const holder = document.createElement('template');
   holder.innerHTML = source.trim();
-  const svg = holder.content.firstElementChild.cloneNode(true);
-  /* Every motif in this set is painted by the .p-fill/.p-shade/.p-edge rules
-     in sunset.css, which are scoped to .gy-svg. Tagging it here means no
-     caller can forget and get an invisible shape. */
-  svg.classList.add('gy-svg');
-  return svg;
-}
-
-/**
- * Several motifs on top of one another in a square box — a lantern and its
- * glass, a candle and its flame. Returned as a span so callers can size and
- * position the whole assembly as one thing.
- */
-export function stack(names, className) {
-  const holder = document.createElement('span');
-  holder.className = className ? `gy-stack ${className}` : 'gy-stack';
-  names.forEach((name) => holder.appendChild(doodle(name)));
-  return holder;
+  return holder.content.firstElementChild.cloneNode(true);
 }

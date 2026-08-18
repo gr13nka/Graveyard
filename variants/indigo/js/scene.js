@@ -14,27 +14,25 @@
  * scrolling back up must not replay them.
  */
 
-import { doodle, stack } from './doodles.js';
+import { doodle } from './doodles.js';
 import { markerEl } from './marker.js';
 import { roadEl, ROAD_WIDTH } from './road.js';
-
-const SVG_NS = 'http://www.w3.org/2000/svg';
 import { krkStagger } from '../vendor/karakuli/anim.js';
 
 const SKY = [
-  { name: 'moon', x: 78, y: 60, size: 92, tone: 'is-moon' },
-  { name: 'star', x: 16, y: 104, size: 26 },
-  { name: 'star', x: 37, y: 48, size: 20 },
-  { name: 'star', x: 92, y: 176, size: 22 },
-  { name: 'star', x: 60, y: 214, size: 16 },
-  { name: 'star', x: 50, y: 96, size: 18 },
-  { name: 'cloud', x: 24, y: 244, size: 86, tone: 'is-cloud' },
-  { name: 'cloud', x: 84, y: 268, size: 64, tone: 'is-cloud' },
+  { name: 'moon', x: 76, y: 74, size: 88 },
+  { name: 'star', x: 17, y: 108, size: 32 },
+  { name: 'star', x: 38, y: 52, size: 24 },
+  { name: 'star', x: 91, y: 168, size: 28 },
+  { name: 'star', x: 62, y: 206, size: 20 },
+  { name: 'cloud', x: 27, y: 186, size: 70 },
+  { name: 'spark', x: 52, y: 128, size: 26 },
+  { name: 'spark', x: 86, y: 44, size: 20 },
 ];
 
-function ambientEl({ name, size, tone }) {
+function ambientEl({ name, size }) {
   const holder = document.createElement('span');
-  holder.className = tone ? `gy-ambient ${tone}` : 'gy-ambient';
+  holder.className = 'gy-ambient';
   holder.style.setProperty('--gy-size', `${size}px`);
   const svg = doodle(name);
   svg.classList.add('krk-boil');
@@ -42,42 +40,12 @@ function ambientEl({ name, size, tone }) {
   return holder;
 }
 
-/*
- * The seam between sky and ground. A 1px rule would be the only mechanical
- * edge in a scene built entirely from wobbling shapes, so the horizon is drawn:
- * a filled ground shape whose top edge wanders, plus that same edge stroked.
- * preserveAspectRatio="none" lets it span any width; the stroke survives the
- * stretch because of vector-effect in the stylesheet.
- */
-function horizonEl() {
-  const svg = document.createElementNS(SVG_NS, 'svg');
-  svg.setAttribute('class', 'gy-horizon');
-  svg.setAttribute('viewBox', '0 0 1000 56');
-  svg.setAttribute('preserveAspectRatio', 'none');
-  svg.setAttribute('aria-hidden', 'true');
-
-  const ridge = 'M0,30 C80,18 150,38 240,26 C330,15 400,36 500,28'
-    + ' C600,20 660,40 760,30 C860,20 930,36 1000,24';
-
-  const fill = document.createElementNS(SVG_NS, 'path');
-  fill.setAttribute('class', 'gy-horizon__fill');
-  fill.setAttribute('d', `${ridge} L1000,56 L0,56 Z`);
-  svg.appendChild(fill);
-
-  const line = document.createElementNS(SVG_NS, 'path');
-  line.setAttribute('class', 'gy-horizon__line');
-  line.setAttribute('d', ridge);
-  svg.appendChild(line);
-
-  return svg;
-}
-
 /**
  * Build the cemetery into `root`.
  * @returns {{select: (slug: string|null) => void, scrollHome: () => void}}
  */
 export function mountScene(root, layout, { onSelect, heading } = {}) {
-  const { plots, roadX, height, horizon, lamps = [], milestones = [] } = layout;
+  const { plots, roadX, height, lamps = [], milestones = [] } = layout;
 
   root.classList.add('gy-frame');
   root.innerHTML = '';
@@ -90,15 +58,6 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
   field.className = 'gy-field';
   field.style.height = `${height}px`;
   scroller.appendChild(field);
-
-  /* Sky first, so everything else stands in front of it. The ground itself is
-     the scroller's own background — it has no element, because it has no edge
-     except the horizon. */
-  const band = document.createElement('div');
-  band.className = 'gy-sky-band';
-  band.appendChild(Object.assign(document.createElement('div'), { className: 'gy-stripe' }));
-  band.appendChild(Object.assign(document.createElement('div'), { className: 'gy-stripe gy-stripe--low' }));
-  field.appendChild(band);
 
   const sky = document.createElement('div');
   sky.className = 'gy-sky';
@@ -125,19 +84,12 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
     meta.className = 'gy-sign__meta krk-enter-rise';
     meta.textContent = heading.meta;
     gateSign.append(name, meta);
-    /* Into the sky band rather than the field: the sign belongs to the sky it
-       hangs in, and that is also the surface its contrast must be measured
-       against. */
-    band.appendChild(gateSign);
+    field.appendChild(gateSign);
     krkStagger(gateSign, { mode: 'wave', step: 90 });
   }
 
-
-  /* The road starts at the horizon. Running it to y=0 would draw a path
-     through the sky. */
-  const road = roadEl(height - horizon);
+  const road = roadEl(height);
   road.style.left = `calc(${roadX}% - ${ROAD_WIDTH / 2}px)`;
-  road.style.top = `${horizon}px`;
   field.appendChild(road);
 
   /* Lamps and milestones sit between the road and the graves: they read as
@@ -169,19 +121,15 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
     el.appendChild(pool);
 
     const rays = doodle('glow');
-    rays.classList.add('gy-lamp__rays');
+    rays.classList.add('gy-lamp__rays', 'krk-boil');
     el.appendChild(rays);
 
-    const lamplight = stack(['lantern', 'lantern-glass'], 'gy-lamp__body');
-    lamplight.lastElementChild.classList.add('gy-lamp__glass');
-    lamplight.classList.add('krk-boil');
+    const lamplight = doodle('lantern');
+    lamplight.classList.add('gy-lamp__body', 'krk-boil');
     el.appendChild(lamplight);
 
     wayLayer.appendChild(el);
   });
-
-  /* Drawn after the road so the seam sits on top of where the path meets it. */
-  field.appendChild(horizonEl());
 
   const plotLayer = document.createElement('div');
   plotLayer.className = 'gy-plots';
