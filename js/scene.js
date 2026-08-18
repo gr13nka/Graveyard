@@ -123,12 +123,15 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
     el.style.top = `${lamp.y}px`;
     el.setAttribute('aria-hidden', 'true');
 
-    const pool = doodle('light-pool');
-    pool.classList.add('gy-lamp__pool');
+    /* Both the pool on the ground and the halo around the flame are CSS
+       radial falloffs, matching the candle. Drawn as stroked motifs they were
+       spiky starbursts that read as sparkles rather than lamplight. */
+    const pool = document.createElement('span');
+    pool.className = 'gy-lamp__pool';
     el.appendChild(pool);
 
-    const rays = doodle('glow');
-    rays.classList.add('gy-lamp__rays', 'krk-boil');
+    const rays = document.createElement('span');
+    rays.className = 'gy-lamp__rays';
     el.appendChild(rays);
 
     const lamplight = doodle('lantern');
@@ -146,25 +149,15 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
    */
   const haloLayer = document.createElement('div');
   haloLayer.className = 'gy-halo-layer';
+
   const halo = document.createElement('div');
   halo.className = 'gy-halo';
   halo.setAttribute('aria-hidden', 'true');
-  ['gy-halo__ring gy-halo__ring--wide', 'gy-halo__ring gy-halo__ring--mid', 'gy-halo__ring gy-halo__ring--core']
-    .forEach((cls) => {
-      const ring = doodle('shadow-blob');
-      ring.setAttribute('class', cls);
-      halo.appendChild(ring);
-    });
   haloLayer.appendChild(halo);
 
   const candleHalo = document.createElement('div');
   candleHalo.className = 'gy-halo gy-halo--candle';
   candleHalo.setAttribute('aria-hidden', 'true');
-  ['gy-halo__ring gy-halo__ring--mid', 'gy-halo__ring gy-halo__ring--core'].forEach((cls) => {
-    const ring = doodle('shadow-blob');
-    ring.setAttribute('class', cls);
-    candleHalo.appendChild(ring);
-  });
   haloLayer.appendChild(candleHalo);
 
   field.appendChild(haloLayer);
@@ -271,7 +264,10 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
     const sources = [];
     const chosen = selected && byslug.get(selected);
     if (chosen) {
-      sources.push({ x: toPx(chosen.plot.x), y: chosen.plot.y, radius: LIGHT_RADIUS, slug: selected });
+      sources.push({
+        x: toPx(chosen.plot.x), y: chosen.plot.y, radius: LIGHT_RADIUS,
+        slug: selected, casts: true,
+      });
       halo.style.left = `${chosen.plot.x}%`;
       halo.style.top = `${chosen.plot.y}px`;
     }
@@ -281,7 +277,10 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
       const box = scroller.getBoundingClientRect();
       const cx = pointer.x - box.left;
       const cy = pointer.y - box.top + scroller.scrollTop;
-      sources.push({ x: cx, y: cy, radius: CANDLE_RADIUS, slug: null });
+      /* casts: false — a shadow that swung around with every twitch of the
+         pointer read as noise, not as light. The candle warms what it passes;
+         only the grave you picked throws shadows. */
+      sources.push({ x: cx, y: cy, radius: CANDLE_RADIUS, slug: null, casts: false });
       /* transform, not left/top: this moves every frame, and left/top would
          force a layout pass on the whole field each time. */
       candleHalo.style.transform = `translate3d(${cx.toFixed(1)}px, ${cy.toFixed(1)}px, 0)`;
@@ -290,7 +289,8 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
 
     byslug.forEach((entry, slug) => {
       const { el, plot } = entry;
-      let best = 0;
+      let best = 0;      // brightest light reaching this stone, from any source
+      let shade = 0;      // brightest among the sources that throw shadows
       let dir = 0;
       for (const source of sources) {
         /* The selected grave does not light itself — it would glow at its own
@@ -298,7 +298,8 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
         if (source.slug === slug) continue;
         const dx = toPx(plot.x) - source.x;
         const reach = Math.max(0, 1 - Math.hypot(dx, plot.y - source.y) / source.radius);
-        if (reach > best) { best = reach; dir = dx; }
+        if (reach > best) best = reach;
+        if (source.casts && reach > shade) { shade = reach; dir = dx; }
       }
 
       /*
@@ -311,11 +312,12 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
        * the halos are drawn as discrete rings for the same reason.
        */
       const lit = Math.round(best * LIGHT_STEPS) / LIGHT_STEPS;
-      const cast = lit > 0 ? (dir >= 0 ? 'right' : 'left') : 'none';
+      const cast = shade > 0 ? (dir >= 0 ? 'right' : 'left') : 'none';
       if (lit === entry.lit && cast === entry.cast) return;
       entry.lit = lit;
       entry.cast = cast;
       el.style.setProperty('--gy-lit', String(lit));
+      el.style.setProperty('--gy-shade', String(Math.round(shade * LIGHT_STEPS) / LIGHT_STEPS));
       el.classList.toggle('is-cast-right', cast === 'right');
       el.classList.toggle('is-cast-left', cast === 'left');
     });

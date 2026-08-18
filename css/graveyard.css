@@ -133,11 +133,11 @@ html, body { height: 100%; margin: 0; }
   overflow: visible;
   fill: var(--gy-cast);
   stroke: none;
-  opacity: calc(var(--gy-lit, 0) * 0.8);
+  opacity: calc(var(--gy-shade, 0) * 0.8);
   pointer-events: none;
   transition: opacity var(--krk-motion-slow) var(--krk-motion-ease),
               scale var(--krk-motion-slow) var(--krk-motion-bounce);
-  scale: calc(1 + var(--gy-lit, 0) * 1.9) 0.34;
+  scale: calc(1 + var(--gy-shade, 0) * 1.9) 0.34;
 }
 
 .is-cast-right .gy-marker__cast { transform-origin: 12% 100%; }
@@ -206,27 +206,39 @@ html, body { height: 100%; margin: 0; }
 .gy-lamp__body { color: var(--gy-lamp); }
 
 .gy-lamp__rays {
-  color: var(--gy-lamp-deep);
-  scale: 1.55;
-  opacity: 0.75;
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  width: 190px;
+  height: 190px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgb(255 226 160 / 0.34) 0%,
+    rgb(240 200 120 / 0.17) 30%,
+    rgb(230 190 110 / 0.06) 62%,
+    rgb(230 190 110 / 0) 100%
+  );
   animation: gy-flicker 2.6s steps(1) infinite;
 }
 
+/* The pool a lantern throws on the ground: flattened, because it lies on it. */
 .gy-lamp__pool {
-  color: var(--gy-lamp-deep);
-  opacity: 0.42;
-  scale: 1.5 0.62;
-  translate: 0 62%;
-}
-
-/* A lantern that never moves reads as a sticker. Three discrete steps, slow
-   enough to notice only in the corner of the eye — the same discrete-frame
-   logic as boil, not a smooth pulse. */
-@keyframes gy-flicker {
-  0%   { opacity: 0.75; scale: 1.55; }
-  33%  { opacity: 0.62; scale: 1.48; }
-  66%  { opacity: 0.82; scale: 1.6; }
-  100% { opacity: 0.75; scale: 1.55; }
+  position: absolute;
+  left: 50%;
+  bottom: -30%;
+  width: 300px;
+  height: 130px;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgb(230 190 110 / 0.16) 0%,
+    rgb(230 190 110 / 0.08) 44%,
+    rgb(230 190 110 / 0.02) 74%,
+    rgb(230 190 110 / 0) 100%
+  );
 }
 
 /* ---- Year milestones -------------------------------------------------
@@ -530,8 +542,11 @@ html, body { height: 100%; margin: 0; }
 }
 
 /* ---- Light from the selected grave -----------------------------------
- * Three nested blobs at stepped opacity, not a radial gradient: canon has no
- * gradients, and a contour-stepped falloff is how light gets drawn by hand.
+ * A radial falloff rather than nested stroked blobs. The blob version had a
+ * lumpy edge that read as a smudge on the ground instead of as light, which is
+ * the one thing it had to read as. Karakuli forbids gradients; this is a noted
+ * exception, confined to depicting light and used nowhere else.
+ *
  * Sits in its own layer beneath every stone so it can never paint over one.
  */
 
@@ -539,29 +554,35 @@ html, body { height: 100%; margin: 0; }
 
 .gy-halo {
   position: absolute;
-  width: 0;
-  height: 0;
+  left: 0;
+  top: 0;
+  width: 660px;
+  height: 300px;
+  margin: -150px 0 0 -330px;
   opacity: 0;
-  scale: 0.6;
-  transition: opacity var(--krk-motion-slow) var(--krk-motion-ease),
-              scale 420ms var(--krk-motion-bounce);
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgb(230 190 110 / 0.20) 0%,
+    rgb(230 190 110 / 0.13) 34%,
+    rgb(230 190 110 / 0.06) 62%,
+    rgb(230 190 110 / 0.02) 82%,
+    rgb(230 190 110 / 0) 100%
+  );
+  transition: opacity var(--krk-motion-slow) var(--krk-motion-ease);
 }
 
-.gy-halo.is-lit { opacity: 1; scale: 1; }
+.gy-halo.is-lit { opacity: 1; }
 
-.gy-halo__ring {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  translate: -50% 0;
-  fill: var(--gy-lamp);
-  stroke: none;
-  overflow: visible;
+/* One flame in a hand, not a standing memorial: smaller and softer. Moved with
+   transform every frame, so nothing here may transition it. */
+.gy-halo--candle {
+  width: 380px;
+  height: 190px;
+  margin: -95px 0 0 -190px;
+  will-change: transform;
+  transition: opacity var(--krk-motion-fast) var(--krk-motion-ease);
 }
-
-.gy-halo__ring--wide { width: 660px; height: 320px; margin-bottom: -118px; opacity: 0.14; }
-.gy-halo__ring--mid  { width: 450px; height: 220px; margin-bottom: -78px;  opacity: 0.18; }
-.gy-halo__ring--core { width: 260px; height: 128px; margin-bottom: -46px;  opacity: 0.24; }
 
 /* ---- The candle you carry --------------------------------------------
  * Only inside the yard. Over the epitaph panel the native cursor comes back,
@@ -583,11 +604,11 @@ html, body { height: 100%; margin: 0; }
   left: 0;
   top: 0;
   z-index: 40;
-  width: 58px;
-  height: 58px;
-  /* The flame sits above and slightly right of the true pointer, the way a
-     held candle would — the hotspot is the pointer, not the wax. */
-  margin: -50px 0 0 -15px;
+  width: 26px;
+  height: 26px;
+  /* The wick sits just above the true pointer — the hotspot is the pointer,
+     not the wax. */
+  margin: -22px 0 0 -8px;
   pointer-events: none;
   opacity: 0;
   transition: opacity var(--krk-motion-fast) var(--krk-motion-ease);
@@ -595,14 +616,31 @@ html, body { height: 100%; margin: 0; }
 
 .gy-candle.is-held { opacity: 1; }
 
-.gy-candle svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.gy-candle svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  color: var(--gy-near);
+}
 
-.gy-candle__body { color: var(--gy-near); }
-
+/* The flame's own light, centred on the wick rather than the whole candle. */
 .gy-candle__glow {
-  color: var(--gy-lamp);
-  scale: 1.35;
-  opacity: 0.75;
+  position: absolute;
+  left: 50%;
+  top: -2px;
+  width: 130px;
+  height: 130px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgb(255 226 160 / 0.42) 0%,
+    rgb(240 200 120 / 0.20) 30%,
+    rgb(230 190 110 / 0.07) 60%,
+    rgb(230 190 110 / 0) 100%
+  );
   animation: gy-flicker 2.6s steps(1) infinite;
 }
 
@@ -622,5 +660,3 @@ html, body { height: 100%; margin: 0; }
   transition: opacity var(--krk-motion-fast) var(--krk-motion-ease);
   will-change: transform;
 }
-.gy-halo--candle .gy-halo__ring--mid { width: 400px; height: 196px; margin-bottom: -70px; opacity: 0.13; }
-.gy-halo--candle .gy-halo__ring--core { width: 224px; height: 112px; margin-bottom: -40px; opacity: 0.19; }
