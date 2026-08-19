@@ -17,15 +17,13 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync, writeFileSync, mkdirSync, copyFileSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname, join, resolve, extname, basename } from 'node:path';
+import { mkdirSync, copyFileSync, existsSync } from 'node:fs';
+import { join, resolve, extname } from 'node:path';
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const DATA = join(ROOT, 'data', 'projects.json');
-const SHOTS = join(ROOT, 'shots');
-
-const MARKERS = ['headstone-round', 'headstone-cross', 'obelisk', 'urn', 'mound'];
+import {
+  SHOTS, PROJECT_MARKERS as MARKERS,
+  fail, parseArgs, slugify, loadProjects, inter,
+} from './graveyard.mjs';
 
 const HELP = `
 bury — put a dead repo in the graveyard
@@ -56,33 +54,6 @@ Examples
   node tools/bury.mjs gr13nka/avm --cause "semester ended" --marker obelisk
   node tools/bury.mjs OOP --desc "Coursework. Exists to prove attendance." --shot ~/shot.png
 `.trim();
-
-/* ---- argument parsing ------------------------------------------------ */
-
-function parseArgs(argv) {
-  const opts = { shots: [] };
-  const rest = [];
-  for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i];
-    if (!arg.startsWith('--')) { rest.push(arg); continue; }
-    const key = arg.slice(2);
-    if (key === 'help' || key === 'list' || key === 'force'
-      || key === 'dry-run' || key === 'no-readme') {
-      opts[key] = true;
-      continue;
-    }
-    const value = argv[++i];
-    if (value === undefined) fail(`--${key} needs a value`);
-    if (key === 'shot') opts.shots.push(value);
-    else opts[key] = value;
-  }
-  return { opts, rest };
-}
-
-function fail(message) {
-  console.error(`bury: ${message}`);
-  process.exit(1);
-}
 
 /* ---- github ---------------------------------------------------------- */
 
@@ -180,19 +151,6 @@ export function firstProse(markdown) {
 
 /* ---- the graveyard file ---------------------------------------------- */
 
-const slugify = (name) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-
-function loadProjects() {
-  if (!existsSync(DATA)) return [];
-  try {
-    return JSON.parse(readFileSync(DATA, 'utf8'));
-  } catch (error) {
-    fail(`data/projects.json is not valid JSON (${error.message})`);
-  }
-}
-
-const saveProjects = (list) => writeFileSync(DATA, `${JSON.stringify(list, null, 2)}\n`);
-
 function copyShots(slug, paths) {
   if (!paths.length) return [];
   const dir = join(SHOTS, slug);
@@ -230,7 +188,10 @@ function listCandidates() {
 /* ---- main ------------------------------------------------------------ */
 
 function main() {
-  const { opts, rest } = parseArgs(process.argv.slice(2));
+  const { opts, rest } = parseArgs(process.argv.slice(2), {
+    flags: ['help', 'list', 'force', 'dry-run', 'no-readme'],
+    repeatable: ['shot'],
+  });
 
   if (opts.help) { console.log(HELP); return; }
   if (opts.list) { listCandidates(); return; }
@@ -240,9 +201,8 @@ function main() {
   const repo = fetchRepo(nameWithOwner);
   const slug = opts.slug ? slugify(opts.slug) : slugify(repo.name);
 
-  const projects = loadProjects();
-  const existing = projects.findIndex((p) => p.slug === slug);
-  if (existing !== -1 && !opts.force) {
+  const clash = loadProjects().find((p) => p.slug === slug);
+  if (clash && !opts.force) {
     fail(`${slug} is already buried. Use --force to overwrite, or --slug to bury a second one.`);
   }
 
@@ -281,11 +241,8 @@ function main() {
     return;
   }
 
-  entry.screenshots = copyShots(slug, opts.shots);
-
-  if (existing !== -1) projects[existing] = entry;
-  else projects.push(entry);
-  saveProjects(projects);
+  entry.screenshots = copyShots(slug, opts.shot);
+  inter(entry, { force: true });
 
   const lang = (repo.primaryLanguage || {}).name;
   console.log(`\n  buried ${repo.name}${lang ? ` (${lang})` : ''}`);

@@ -16,6 +16,7 @@
 
 import { doodle } from './doodles.js';
 import { markerEl } from './marker.js';
+import { isLit, subscribe } from './vigil.js';
 import { roadEl, ROAD_WIDTH } from './road.js';
 import { krkStagger } from '../vendor/karakuli/anim.js';
 
@@ -52,6 +53,12 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
      the smaller of the two — it is one flame, not a standing memorial. */
   const LIGHT_RADIUS = 460;
   const CANDLE_RADIUS = 330;
+  /* A votive standing on the ground is the smallest light in the yard, and has
+     to stay legibly under the one you get for picking a grave. The falloff is
+     linear, so at 260 a neighbour one ROW_STEP away takes ~0.5 where the
+     selected grave would give it 0.7 — "somebody lit a candle over there"
+     rather than "this is the grave you are standing at". */
+  const VIGIL_RADIUS = 260;
   const LIGHT_STEPS = 10;   // how many discrete brightness levels a stone can take
 
   root.classList.add('gy-frame');
@@ -173,6 +180,7 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
     el.className = `gy-plot gy-plot--${plot.side}`;
     el.style.setProperty('--gy-size', `${plot.size}px`);
     el.style.setProperty('--gy-tilt', `${plot.tilt}deg`);
+    el.style.setProperty('--gy-seed', String(plot.seed ?? 0));
     el.style.left = `${plot.x}%`;
     el.style.top = `${plot.y}px`;
     /* Front rows overlap back rows. Done with z-index rather than DOM order so
@@ -273,6 +281,16 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
     }
     halo.classList.toggle('is-lit', Boolean(chosen));
 
+    /*
+     * Every candle somebody lit. Static, so the list is rebuilt when the store
+     * changes rather than here — this runs on every frame the pointer moves.
+     * casts: false, like the carried candle: a permanent shadow would freeze
+     * the direction the selected grave is supposed to be deciding.
+     */
+    for (const vigil of vigilSources) {
+      sources.push({ x: toPx(vigil.x), y: vigil.y, radius: VIGIL_RADIUS, slug: vigil.slug, casts: false });
+    }
+
     if (pointer) {
       const box = scroller.getBoundingClientRect();
       const cx = pointer.x - box.left;
@@ -323,7 +341,48 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
     });
   }
 
-  new ResizeObserver(castLight).observe(scroller);
+  /*
+   * Which graves are holding a vigil, and the pool each one throws. Recomputed
+   * only when the store changes — the candles are static, so castLight() must
+   * never go asking.
+   *
+   * A grave does not light its own stone (a light standing inside it would
+   * glow at its own feet), so its own warmth comes from --gy-lit-floor in CSS
+   * instead: one write per change, not one per frame.
+   */
+  const vigilHalos = new Map();
+  let vigilSources = [];
+
+  function refreshVigil() {
+    vigilSources = [];
+    byslug.forEach((entry, slug) => {
+      const lit = isLit(slug);
+      entry.el.classList.toggle('is-vigil', lit);
+      if (!lit) {
+        vigilHalos.get(slug)?.remove();
+        vigilHalos.delete(slug);
+        return;
+      }
+      vigilSources.push({ x: entry.plot.x, y: entry.plot.y, slug });
+      if (vigilHalos.has(slug)) return;
+      const pool = document.createElement('div');
+      pool.className = 'gy-halo gy-halo--vigil';
+      pool.setAttribute('aria-hidden', 'true');
+      pool.style.left = `${entry.plot.x}%`;
+      pool.style.top = `${entry.plot.y}px`;
+      haloLayer.appendChild(pool);
+      vigilHalos.set(slug, pool);
+    });
+    castLight();
+  }
+
+  /* Reading the store at mount is what makes a lit candle survive a rebuild;
+     the subscription is what saves it from needing one. */
+  const stopVigil = subscribe(refreshVigil);
+  refreshVigil();
+
+  const sizeWatcher = new ResizeObserver(castLight);
+  sizeWatcher.observe(scroller);
 
   /* Pointer position is read in viewport space and used in field space, so it
      has to survive scrolling — hence the scrollTop term. Throttled to a frame:
@@ -356,5 +415,13 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
     castLight();
   }
 
-  return { select, scrollHome };
+  /* mountScene replaces the whole frame, so the scene it replaces has to let
+     go of everything that outlives the DOM it was watching. */
+  function destroy() {
+    stopVigil();
+    watcher.disconnect();
+    sizeWatcher.disconnect();
+  }
+
+  return { select, scrollHome, destroy };
 }

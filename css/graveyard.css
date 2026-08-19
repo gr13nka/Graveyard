@@ -114,7 +114,13 @@ html, body { height: 100%; margin: 0; }
   /* Warms toward the lantern colour as --gy-lit rises. Set on the stone only:
      the name label keeps its own measured colour so lighting can never push
      text below its contrast floor. */
-  color: color-mix(in oklab, var(--gy-near), var(--gy-lamp) calc(var(--gy-lit, 0) * 62%));
+  /* --gy-lit-floor is the grave's own candle. castLight() skips a source
+     for the stone it stands on — otherwise a light would glow at its own
+     feet — so a grave holding a vigil would sit dark under a lit candle.
+     The floor is written once per change, never per frame, so it costs
+     the boil filter nothing. */
+  color: color-mix(in oklab, var(--gy-near), var(--gy-lamp)
+    calc(max(var(--gy-lit, 0), var(--gy-lit-floor, 0)) * 62%));
 }
 
 /*
@@ -261,7 +267,11 @@ html, body { height: 100%; margin: 0; }
   pointer-events: none;
 }
 
-/* The candle is the colour moment: it exists only while this grave is lit. */
+/*
+ * The candle is the colour moment, and it means somebody lit one here — NOT
+ * that this grave is selected. It used to sprout on selection as decoration,
+ * which said nothing, because clicking a grave lights nothing. See CLAUDE.md.
+ */
 .gy-marker__candle {
   position: absolute;
   right: -14%;
@@ -275,11 +285,51 @@ html, body { height: 100%; margin: 0; }
   opacity: 0;
 }
 
+/* Facing the path you walk, on both sides of it. Pinned to one side, a candle
+   on a right-hand plot stood out in the weeds behind the undergrowth that
+   plots.js already places outward. */
+.gy-plot--right .gy-marker__candle { right: auto; left: -14%; }
+
+/* The flame's own light. A radial falloff, like every other light here. */
+.gy-marker__flame {
+  position: absolute;
+  right: -20%;
+  bottom: -6%;
+  width: 74px;
+  height: 74px;
+  margin: -20px -20px 0 0;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    rgb(255 226 160 / 0.40) 0%,
+    rgb(240 200 120 / 0.19) 30%,
+    rgb(230 190 110 / 0.07) 60%,
+    rgb(230 190 110 / 0) 100%
+  );
+}
+
+.gy-plot--right .gy-marker__flame { right: auto; left: -20%; margin: -20px 0 0 -20px; }
+
 .is-selected .gy-marker { color: var(--gy-lamp); }
 .is-selected .gy-marker__name { color: var(--gy-lamp); font-weight: 700; }
 
-.is-selected .gy-marker__candle {
+/* Its own candle, which castLight() cannot give it: a source standing on this
+   grave is skipped for this grave, or a light would glow at its own feet. Set
+   in CSS, so it is one static declaration rather than a per-frame write. */
+.is-vigil { --gy-lit-floor: 0.35; }
+
+.is-vigil .gy-marker__candle {
   animation: gy-candle-sprout 320ms var(--krk-motion-bounce) forwards;
+}
+
+/* Staggered off a hash of the slug, so eight candles do not flicker in step
+   and the yard still renders identically on every reload. */
+.is-vigil .gy-marker__flame {
+  opacity: 1;
+  animation: gy-flicker 2.6s steps(1) infinite;
+  animation-delay: calc(var(--gy-seed, 0) * -2.6s);
 }
 
 @keyframes gy-candle-sprout {
@@ -420,6 +470,20 @@ html, body { height: 100%; margin: 0; }
   transition: opacity var(--krk-motion-fast) var(--krk-motion-ease);
 }
 
+/* An idea's door out is a <button>, because it opens the report here rather
+   than navigating anywhere. It has to read as the same affordance as the repo
+   link beside it, so it gives up every default a button arrives with. */
+.gy-epitaph__link--read {
+  appearance: none;
+  background: none;
+  border: 0;
+  border-bottom: var(--krk-stroke-ui) solid currentColor;
+  border-radius: 0;
+  padding: 0 0 1px;
+  font: inherit;
+  cursor: pointer;
+}
+
 .gy-epitaph__link:hover { opacity: 0.72; }
 .gy-epitaph__link:focus-visible { outline: 2px solid var(--krk-accent); outline-offset: 3px; }
 
@@ -463,6 +527,10 @@ html, body { height: 100%; margin: 0; }
   .gy-field { --gy-zoom: 0.6; }
   .gy-epitaph {
     position: fixed;
+    /* Plots carry a z-index for their front-to-back overlap, so without one
+       here the sheet is opaque and still painted under them — graves stood on
+       top of the prose. */
+    z-index: 10;
     inset: auto 0 0 0;
     max-height: 62vh;
     background: var(--krk-paper);
@@ -575,13 +643,27 @@ html, body { height: 100%; margin: 0; }
 .gy-halo.is-lit { opacity: 1; }
 
 /* One flame in a hand, not a standing memorial: smaller and softer. Moved with
-   transform every frame, so nothing here may transition it. */
+   transform every frame, so nothing here may transition it — and it lives in
+   the scene under the stones rather than on the cursor, because a glow drawn
+   at cursor level paints over the graves it is meant to be lighting. */
 .gy-halo--candle {
   width: 380px;
   height: 190px;
   margin: -95px 0 0 -190px;
   will-change: transform;
   transition: opacity var(--krk-motion-fast) var(--krk-motion-ease);
+}
+
+/* A votive standing on the ground: the smallest pool in the yard. It must stay
+   legibly under the one a selected grave throws, or "somebody lit a candle
+   here" starts reading as "this is the grave you picked". No will-change —
+   unlike the carried candle this never moves. */
+.gy-halo--vigil {
+  width: 300px;
+  height: 140px;
+  margin: -70px 0 0 -150px;
+  opacity: 1;
+  transition: none;
 }
 
 /* ---- The candle you carry --------------------------------------------
@@ -647,18 +729,6 @@ html, body { height: 100%; margin: 0; }
 /* Touch devices never see the candle, so it must not sit frozen mid-screen. */
 @media (hover: none), (pointer: coarse) {
   .gy-candle { display: none; }
-}
-
-/* The candle's pool of light lives in the scene, under the stones, not on the
-   cursor — a glow drawn at cursor level would paint over the graves it is
-   meant to be lighting. Smaller and dimmer than the selection halo: one flame
-   in a hand, not a standing memorial. */
-.gy-halo--candle {
-  left: 0;
-  top: 0;
-  /* Moved with transform every frame, so nothing here may transition it. */
-  transition: opacity var(--krk-motion-fast) var(--krk-motion-ease);
-  will-change: transform;
 }
 
 /* ---- The editor (?edit only) -----------------------------------------
@@ -801,4 +871,508 @@ html, body { height: 100%; margin: 0; }
   display: inline-block;
   margin-bottom: var(--krk-space-3);
   color: var(--gy-lamp);
+}
+
+/* ---- The flame's stutter ---------------------------------------------
+ * Referenced by every glow in the scene. It was defined once, lost in a
+ * restyle, and nothing flickered for a while — the two consumers were then
+ * re-sized while it was dead, so they are tuned at scale 1. It is rebased on
+ * that rather than restored verbatim (the original sat at scale 1.55), which
+ * keeps the sizes in the rules honest instead of hiding a factor in here.
+ *
+ * steps(1) is the point: light in this project is drawn in discrete rings, and
+ * a smoothly interpolated flicker reads as a pulse rather than as a flame.
+ */
+
+@keyframes gy-flicker {
+  0%   { opacity: 1;    scale: 1;     }
+  33%  { opacity: 0.86; scale: 0.975; }
+  66%  { opacity: 1;    scale: 1.02;  }
+  100% { opacity: 1;    scale: 1;     }
+}
+
+/* ---- Light a candle --------------------------------------------------
+ * The last thing in the epitaph: a candle, a match, and the box you strike it
+ * on. One continuous press — scrub the match across the box, then reach the
+ * wick before it burns down. js/matchbox.js owns the state machine and
+ * publishes it here as [data-state].
+ *
+ * Quiet until it is lit. The panel's accent belongs to the repo link, so
+ * nothing here is amber until there is a flame to justify it.
+ */
+
+/*
+ * The three beats, in one place. js/matchbox.js reads these to time the state
+ * machine and the animations below use them to draw it, so the picture and the
+ * clock cannot drift apart. Written in ms, because that is what the script
+ * parses.
+ */
+.gy-matchbox {
+  --gy-burn: 5000ms;
+  --gy-spend: 600ms;
+  --gy-run: 1400ms;
+  margin-top: var(--krk-space-5);
+}
+
+.gy-matchbox__tray {
+  position: relative;
+  /*
+   * Stacked, not laid out in a row. Side by side, the scrub across the box and
+   * the carry to the wick were the same leftward move on the same line, so a
+   * single sweep struck the match AND landed it on the candle — the five
+   * seconds never happened. Striking is now horizontal and carrying is
+   * vertical, and one gesture cannot be mistaken for the other.
+   */
+  height: 236px;
+  /* Below 900px the panel is a fixed bottom sheet that scrolls. Without this a
+     touch drag scrolls the sheet instead of moving the match. Scoped to the
+     tray so the rest of the panel still scrolls the way it should. */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.gy-matchbox__candle {
+  position: absolute;
+  left: 52px;
+  top: 0;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--gy-near);
+  cursor: pointer;
+}
+
+.gy-matchbox__candle:focus-visible {
+  outline: 2px solid var(--gy-lamp);
+  outline-offset: 4px;
+  border-radius: 10px 13px 9px 12px / 12px 9px 13px 10px;
+}
+
+.gy-matchbox__wax {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Light, so a radial falloff — the noted exception, confined to depicting it.
+   Nothing at all until there is a flame throwing it. */
+.gy-matchbox__glow {
+  position: absolute;
+  left: 50%;
+  top: 25%;
+  width: 116px;
+  height: 116px;
+  margin: -58px 0 0 -58px;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    rgb(255 226 160 / 0.42) 0%,
+    rgb(240 200 120 / 0.20) 30%,
+    rgb(230 190 110 / 0.07) 60%,
+    rgb(230 190 110 / 0) 100%
+  );
+}
+
+.gy-matchbox__box {
+  position: absolute;
+  left: 0;
+  top: 34px;
+  width: 168px;
+  height: 168px;
+  overflow: visible;
+  /* Dimmer than the match on purpose: the box is scenery, the match is the
+     thing to pick up, and the eye should be able to tell which is which
+     without reading the label first. */
+  color: var(--krk-ink-faint);
+  pointer-events: none;
+  /* Drawn at three and a half times the size the 48-unit doodle contract
+     assumes, and stroke width scales with it — at the contract's 2.8 this box
+     would carry a 10px stroke beside a 3.7px candle. "One pen" is about the
+     weight you see, so the pen is scaled back to match. */
+  stroke-width: 1.05;
+}
+
+/* The striking face, as a target. The box drawing is a 48-unit square with the
+   box lying across its middle, so its element box is nearly twice the height
+   of anything drawn in it — striking against that would let a match catch in
+   mid-air well above the grit. Invisible; it only has to have bounds. */
+.gy-matchbox__strip {
+  position: absolute;
+  left: 15px;
+  top: 139px;
+  width: 138px;
+  height: 21px;
+  pointer-events: none;
+}
+
+.gy-matchbox__match {
+  position: absolute;
+  left: 50px;
+  top: 168px;
+  width: 68px;
+  height: 68px;
+  color: var(--gy-near);
+  cursor: grab;
+  touch-action: none;
+}
+
+.gy-matchbox__stick {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* A zero-size anchor pinned to the match's head. The flame and its light hang
+   off it by margins, which leaves `translate` free for the burn to walk the
+   whole fire down the stick as one thing. */
+.gy-matchbox__fire {
+  position: absolute;
+  left: 29%;
+  top: 35%;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The light it throws — the noted exception, and only ever the light. */
+.gy-matchbox__spark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 88px;
+  height: 88px;
+  margin: -44px 0 0 -44px;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgb(255 226 160 / 0.46) 0%,
+    rgb(240 200 120 / 0.20) 32%,
+    rgb(230 190 110 / 0.06) 64%,
+    rgb(230 190 110 / 0) 100%
+  );
+}
+
+/* The flame itself is DRAWN, not blurred. A glow alone read as a smudge on the
+   end of a stick rather than as something burning — the light needs a shape
+   throwing it. Squash-and-stretch on stepped frames, because a hand-drawn
+   flame flickers in whole cels and never tweens. */
+.gy-matchbox__flame {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  margin: -26px 0 0 -14px;
+  overflow: visible;
+  color: var(--krk-pen-orange);
+  transform-origin: 50% 100%;
+  stroke-width: 5;
+  animation: gy-flame-wobble 360ms steps(1) infinite;
+}
+
+@keyframes gy-flame-wobble {
+  0%   { scale: 1 1;       rotate: -3deg; }
+  25%  { scale: 0.9 1.12;  rotate: 5deg; }
+  50%  { scale: 1.08 0.94; rotate: -2deg; }
+  75%  { scale: 0.96 1.05; rotate: 3deg; }
+  100% { scale: 1 1;       rotate: -3deg; }
+}
+
+.gy-matchbox[data-state='held'] .gy-matchbox__match { cursor: grabbing; }
+
+/*
+ * Burning. The stick is clipped back from its head rather than redrawn, and
+ * the flame walks down with it — five seconds from the strike to your fingers.
+ * The end of THIS animation is what tells the module the match is spent; there
+ * is deliberately no timer running alongside it to disagree.
+ */
+.gy-matchbox[data-state='burning'] .gy-matchbox__stick {
+  animation: gy-match-burn var(--gy-burn) linear forwards;
+}
+
+.gy-matchbox[data-state='burning'] .gy-matchbox__fire {
+  animation: gy-match-burn-flame var(--gy-burn) linear forwards;
+}
+
+@keyframes gy-match-burn {
+  from { clip-path: inset(0 0 0 0); }
+  to   { clip-path: inset(46% 0 0 46%); }
+}
+
+@keyframes gy-match-burn-flame {
+  0%   { translate: 0 0;        opacity: 0; }
+  2%   { translate: 0 0;        opacity: 1; }
+  100% { translate: 22px 22px;  opacity: 1; }
+}
+
+/* Guttered out. A fumbled attempt must not feel like a penalty, so the puff
+   and the fresh match together stay under a second. */
+.gy-matchbox[data-state='spent'] .gy-matchbox__match {
+  animation: gy-match-spend var(--gy-spend) var(--krk-motion-ease) forwards;
+}
+
+@keyframes gy-match-spend {
+  0%   { opacity: 1; rotate: 0deg; }
+  55%  { opacity: 0.3; rotate: -8deg; }
+  100% { opacity: 0; rotate: -14deg; }
+}
+
+.gy-matchbox[data-state='ready'] .gy-matchbox__match {
+  animation: gy-match-fresh 420ms var(--krk-motion-bounce);
+}
+
+/*
+ * A match lying still on a page is furniture. The twitch is the only thing
+ * saying it can be picked up — a shiver every few seconds, on the drawing
+ * rather than on the element the drag moves, so the two never fight over
+ * `translate` and reduced motion can silence one without the other.
+ */
+.gy-matchbox[data-state='ready'] .gy-matchbox__stick {
+  transform-origin: 82% 82%;
+  animation: gy-match-twitch 3.4s 1100ms infinite;
+}
+
+@keyframes gy-match-fresh {
+  0%   { opacity: 0; translate: 0 26px; rotate: -10deg; }
+  100% { opacity: 1; translate: 0 0;    rotate: 0deg; }
+}
+
+@keyframes gy-match-twitch {
+  0%, 84% { translate: 0 0;        rotate: 0deg; }
+  88%     { translate: -2px -3px;  rotate: -8deg; }
+  92%     { translate: 2px 1px;    rotate: 5deg; }
+  96%     { translate: -1px -1px;  rotate: -2deg; }
+  100%    { translate: 0 0;        rotate: 0deg; }
+}
+
+/*
+ * The scripted run, for the keyboard and for anyone who just clicks the
+ * candle: the same two beats, performed. It is also how the drag is
+ * discovered — you watch it once and then reach for the match yourself.
+ */
+.gy-matchbox[data-state='auto'] .gy-matchbox__match {
+  animation: gy-match-travel var(--gy-run) var(--krk-motion-ease) forwards;
+}
+
+.gy-matchbox[data-state='auto'] .gy-matchbox__fire {
+  animation: gy-match-catch var(--gy-run) linear forwards;
+}
+
+@keyframes gy-match-travel {
+  0%   { translate: 0 0; }
+  14%  { translate: 2px -40px; }
+  27%  { translate: 62px -44px; }
+  37%  { translate: -30px -44px; }
+  47%  { translate: 48px -44px; }
+  100% { translate: 14px -176px; }
+}
+
+@keyframes gy-match-catch {
+  0%, 46% { opacity: 0; }
+  51%     { opacity: 1; }
+  100%    { opacity: 1; }
+}
+
+/* Lit. The one place this control spends colour. */
+.gy-matchbox[data-state='lit'] .gy-matchbox__candle {
+  cursor: default;
+  color: var(--krk-pen-orange);
+}
+
+.gy-matchbox[data-state='lit'] .gy-matchbox__wax {
+  animation: gy-candle-sprout 320ms var(--krk-motion-bounce);
+}
+
+.gy-matchbox[data-state='lit'] .gy-matchbox__glow {
+  opacity: 1;
+  animation: gy-flicker 2.6s steps(1) infinite;
+}
+
+.gy-matchbox__label {
+  margin: 0;
+  font-size: var(--krk-text-lg);
+  color: var(--krk-ink-soft);
+}
+
+.gy-matchbox[data-state='lit'] .gy-matchbox__label {
+  font-size: var(--krk-text-sm);
+  color: var(--krk-ink-faint);
+}
+
+/* Announced, never shown: the visible line already says it, and a role=status
+   on visible content would re-announce on every mount of a lit grave. */
+.gy-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Reduced motion ---------------------------------------------------
+ * The first thing here that moves permanently and unprompted is a flame, and
+ * a yard of them flickering in the corner of the eye while you read an epitaph
+ * is exactly what this query is for. Only the endless animations stop; the
+ * one-shot entrances are a response to something the user just did and stay.
+ *
+ * krk-boil is included deliberately. It applies its filter FROM its keyframes,
+ * so stopping it leaves the strokes flat and unfiltered — which is what the
+ * doodles natively look like — and it is the scene's measured rasterisation
+ * bottleneck, so this is also the cheapest the page ever gets, for exactly the
+ * people who asked for less.
+ */
+
+@media (prefers-reduced-motion: reduce) {
+  /* These have to repeat the selectors that set the animations, not shorten
+     them: a media query adds no specificity, so `.gy-marker__flame` alone
+     loses to `.is-vigil .gy-marker__flame` and the flame keeps flickering. */
+  .krk-boil,
+  .gy-lamp__rays,
+  .gy-candle__glow,
+  .is-vigil .gy-marker__flame,
+  .gy-matchbox[data-state='lit'] .gy-matchbox__glow,
+  .gy-matchbox__flame,
+  .gy-matchbox[data-state='ready'] .gy-matchbox__stick {
+    animation: none;
+  }
+}
+
+/* ---- The autopsy reader ----------------------------------------------
+ * A report opened over the yard. It keeps the night ground rather than
+ * turning into a sheet of Karakuli's cream paper: the site is dark, and a
+ * white page dropped over a graveyard at night reads as a different website.
+ * The card is the kit's --line treatment — one ink hairline, organic radius,
+ * no shadow — so it sits on the scene like a pinned page.
+ */
+.gy-autopsy { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; }
+.gy-autopsy[hidden] { display: none; }
+
+.gy-autopsy__backdrop {
+  position: absolute;
+  inset: 0;
+  /* Not a gradient: the no-gradient rule holds for every surface, and only
+     light is drawn with a falloff. This is a flat scrim. */
+  background: color-mix(in srgb, var(--gy-cast) 82%, transparent);
+}
+
+.gy-autopsy__sheet {
+  position: relative;
+  width: min(78ch, calc(100vw - 2 * var(--krk-space-5)));
+  max-height: calc(100vh - 2 * var(--krk-space-5));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* The platform's default bar is a bright slab down a night-coloured page. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--gy-far) transparent;
+  padding: var(--krk-space-6) var(--krk-space-6) var(--krk-space-7);
+  background: var(--krk-paper);
+  border: 1.5px solid var(--gy-mid);
+  border-radius: var(--krk-radius-lg) var(--krk-radius-sm) var(--krk-radius-lg) var(--krk-radius-sm);
+  color: var(--krk-ink);
+}
+.gy-autopsy__sheet:focus { outline: none; }
+
+.gy-autopsy__close {
+  position: sticky;
+  top: 0;
+  float: right;
+  margin-left: var(--krk-space-4);
+  padding: 2px 10px;
+  font-family: var(--krk-font-hand);
+  font-size: var(--krk-text-sm);
+  color: var(--krk-ink-soft);
+  background: var(--krk-paper);
+  border: 1.5px solid var(--gy-mid);
+  border-radius: var(--krk-radius-pill);
+  cursor: pointer;
+}
+.gy-autopsy__close:hover { color: var(--gy-near); border-color: var(--gy-near); }
+.gy-autopsy__close:focus-visible { outline: 2px solid var(--krk-accent); outline-offset: 2px; }
+
+.gy-autopsy__head { margin-bottom: var(--krk-space-5); }
+.gy-autopsy__title { margin: 0; font-size: var(--krk-text-2xl); color: var(--gy-near); }
+.gy-autopsy__meta {
+  margin: 2px 0 0;
+  font-family: var(--krk-font-hand);
+  font-size: var(--krk-text-sm);
+  color: var(--krk-ink-soft);
+}
+
+/* ---- Rendered report ---- */
+
+.gy-md { font-size: var(--krk-text-sm); line-height: 1.62; }
+.gy-md__h { margin: var(--krk-space-6) 0 var(--krk-space-3); color: var(--gy-near); line-height: 1.25; }
+.gy-md__h:first-child { margin-top: 0; }
+h2.gy-md__h { font-size: var(--krk-text-xl); }
+h3.gy-md__h { font-size: var(--krk-text-lg); }
+h4.gy-md__h, h5.gy-md__h, h6.gy-md__h { font-size: var(--krk-text-base); }
+
+.gy-md__p { margin: 0 0 var(--krk-space-4); }
+.gy-md__rule { margin: var(--krk-space-5) 0; border: 0; border-top: 1.5px solid var(--gy-far); }
+
+.gy-md__quote {
+  margin: 0 0 var(--krk-space-4);
+  padding-left: var(--krk-space-4);
+  border-left: 3px solid var(--gy-mid);
+  color: var(--krk-ink);
+}
+
+.gy-md__list { margin: 0 0 var(--krk-space-4); padding-left: var(--krk-space-5); }
+.gy-md__list li { margin-bottom: var(--krk-space-2); }
+.gy-md__list li.is-task { list-style: none; margin-left: calc(-1 * var(--krk-space-4)); }
+.gy-md__list li.is-task input { margin-right: var(--krk-space-2); accent-color: var(--gy-mid); }
+
+.gy-md__link { color: var(--gy-lamp); text-underline-offset: 3px; }
+.gy-md__link:hover { opacity: 0.75; }
+.gy-md__link:focus-visible { outline: 2px solid var(--krk-accent); outline-offset: 2px; }
+
+.gy-md code {
+  padding: 1px 5px;
+  font-size: 0.92em;
+  color: var(--gy-near);
+  background: color-mix(in srgb, var(--gy-far) 34%, transparent);
+  border-radius: var(--krk-radius-sm);
+}
+.gy-md__pre {
+  margin: 0 0 var(--krk-space-4);
+  padding: var(--krk-space-4);
+  overflow-x: auto;
+  background: color-mix(in srgb, var(--gy-far) 24%, transparent);
+  border-radius: var(--krk-radius-sm);
+}
+.gy-md__pre code { padding: 0; background: none; }
+
+/* A money-chain table is wider than any column this reads well in, so it
+   scrolls inside its own box rather than pushing the sheet sideways. */
+.gy-md__scroll { margin: 0 0 var(--krk-space-4); overflow-x: auto; }
+.gy-md__table { border-collapse: collapse; width: 100%; font-size: var(--krk-text-xs); }
+.gy-md__table th,
+.gy-md__table td {
+  padding: var(--krk-space-2) var(--krk-space-3);
+  text-align: left;
+  vertical-align: top;
+  border: 1.5px solid var(--gy-far);
+}
+.gy-md__table th { color: var(--gy-near); font-family: var(--krk-font-hand); }
+
+/* The candle cursor is the scene's; over a page of text the normal one. */
+.gy-has-autopsy .gy-candle { display: none; }
+.gy-autopsy, .gy-autopsy * { cursor: auto; }
+
+@media (max-width: 720px) {
+  .gy-autopsy__sheet { padding: var(--krk-space-5) var(--krk-space-4) var(--krk-space-6); }
 }

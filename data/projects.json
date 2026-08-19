@@ -94,5 +94,75 @@
     "cause": "purpose served in eight days",
     "marker": "headstone-cross",
     "screenshots": []
+  },
+  {
+    "slug": "kopia-backup",
+    "name": "Time Machine на kopia",
+    "kind": "idea",
+    "died": "2026-07-23",
+    "epitaph": "Somebody had already built it, and was giving it away.",
+    "description": "Time Machine for every platform — a friendly face on kopia's backup engine. BlinkDisk had already forked kopia, built exactly that, and given it away, charging only for storage, which this was never going to sell.",
+    "cause": "BlinkDisk shipped the same fork of kopia, free",
+    "autopsy": "autopsies/kopia-backup.md"
+  },
+  {
+    "slug": "build-in-public",
+    "name": "Build in public",
+    "kind": "idea",
+    "died": "2026-07-24",
+    "epitaph": "A hedge tied to the thing it was hedging.",
+    "description": "Monetising the making rather than the made: document the process, sell that, and stay paid even if no product lands. The audience for it subscribes to progress, so the hedge only pays out while the thing it was hedging is already working.",
+    "cause": "the genre pays for numbers, and there were none",
+    "autopsy": "autopsies/build-in-public.md"
+  },
+  {
+    "slug": "guitar-tone-preset-finder",
+    "name": "Гитарный пресет",
+    "kind": "idea",
+    "died": "2026-08-03",
+    "epitaph": "Good, obvious, and four teams got there first.",
+    "description": "Find the amp and pedal settings for any song, band or genre. Four teams had the same idea; one of them gives the answer away inside the largest database of guitar tabs in the world.",
+    "cause": "the answer was already free inside the biggest tab site in the world",
+    "autopsy": "autopsies/guitar-tone-preset-finder.md"
+  },
+  {
+    "slug": "indie-platform-bez-18plus",
+    "name": "Инди без 18+",
+    "kind": "idea",
+    "died": "2026-07-28",
+    "epitaph": "A cure for thirst, served in an empty glass.",
+    "description": "A catalogue of indie games with the adult content left out, as an alternative to itch.io. Developers leave a platform because nobody sees their game, and a clean, empty catalogue guarantees that nobody does.",
+    "cause": "a catalogue with no players is a guaranteed zero",
+    "autopsy": "autopsies/indie-platform-bez-18plus.md"
+  },
+  {
+    "slug": "avito-montenegro",
+    "name": "Авито для Черногории",
+    "kind": "idea",
+    "died": "2026-07-28",
+    "epitaph": "Nobody had complained. Somebody had assumed.",
+    "description": "A classifieds site for Montenegro, on the premise that the country had none. It had several. The relocant channels it would have grown from held about 26,000 people, against the 2,200 to 11,000 daily visits the ad model needed.",
+    "cause": "a market of 26,000 people, needing 11,000 visits a day",
+    "autopsy": "autopsies/avito-montenegro.md"
+  },
+  {
+    "slug": "boox-eink-linked-notes",
+    "name": "Заметки для Boox",
+    "kind": "idea",
+    "died": "2026-07-28",
+    "epitaph": "The feature shipped with the device, for nothing.",
+    "description": "A handwritten notes app for Onyx Boox readers, where lassoing a scribble would link it to another notebook. The stock firmware already does that, free, on the manufacturer's own low-latency pen.",
+    "cause": "lasso-to-link was already in the free stock firmware",
+    "autopsy": "autopsies/boox-eink-linked-notes.md"
+  },
+  {
+    "slug": "diff-code-navigation",
+    "name": "Диф с навигацией",
+    "kind": "idea",
+    "died": "2026-07-25",
+    "epitaph": "Everyone wanted it. Nobody had ever paid for it.",
+    "description": "A diff viewer where ctrl+click jumps to a definition without leaving the diff. A working prototype existed, and so did six live free tools doing the same thing, which is how a category's price gets fixed at zero.",
+    "cause": "six free competitors had set the category's price at zero",
+    "autopsy": "autopsies/diff-code-navigation.md"
   }
 ]

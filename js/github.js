@@ -42,7 +42,16 @@ function fromBase64(encoded) {
  * editor locally against a real repo.
  */
 export function repoFromLocation() {
-  const override = localStorage.getItem('gy_repo');
+  /* Safari's private mode and a file:// origin make every localStorage access
+     a SecurityError. The epitaph panel calls this for every grave it draws, so
+     a throw here would take the whole panel down for a visitor who never asked
+     to edit anything. No override is a fine answer; an exception is not. */
+  let override = null;
+  try {
+    override = localStorage.getItem('gy_repo');
+  } catch {
+    /* storage unreachable — fall through to the URL, which always works */
+  }
   if (override && override.includes('/')) {
     const [owner, repo] = override.split('/');
     return { owner, repo };

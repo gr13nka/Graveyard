@@ -23,9 +23,31 @@ const ENGRAVING = {
   obelisk:           { x: 24.0, y: 34.2, size: 4.1, gap: 0,   lines: 1 },
   urn:               { x: 24.0, y: 29.6, size: 4.0, gap: 0,   lines: 1 },
   mound:             { x: 24.0, y: 24.0, size: 4.2, gap: 4.7, lines: 2 },
+  cairn:             { x: 24.0, y: 37.9, size: 4.4, gap: 0,   lines: 1 },
+  stake:             { x: 24.0, y: 31.8, size: 4.1, gap: 0,   lines: 1 },
 };
 
-export const MARKER_VARIANTS = Object.keys(ENGRAVING);
+/*
+ * Which markers a kind of grave may stand under. A project lived and stopped;
+ * an idea was filtered before anything was built, and giving it a headstone
+ * would claim a life it never had. The two pools do not overlap, and that is
+ * the whole point of them.
+ *
+ * Both of the unbuilt's markers carry one line: they are narrow, and an idea
+ * has only ever got the one date anyway.
+ *
+ * Every name here needs an ENGRAVING entry above and a motif in index.html's
+ * MOTIFS. Missing the first carves no dates; missing the second throws.
+ */
+const VARIANTS_BY_KIND = {
+  project: ['headstone-round', 'headstone-cross', 'obelisk', 'urn', 'mound'],
+  idea: ['cairn', 'stake'],
+};
+
+/** The markers open to a grave of this kind. Unknown kinds are projects. */
+export function markerVariantsFor(kind) {
+  return VARIANTS_BY_KIND[kind] || VARIANTS_BY_KIND.project;
+}
 
 const year = (iso) => (iso ? String(iso).slice(0, 4) : '');
 
@@ -86,10 +108,20 @@ export function markerEl(variant, { name, born, died }) {
   engrave(svg, variant, born, died);
   button.appendChild(svg);
 
-  /* The candle only exists while this grave is the selected one — it is the
-     colour moment, and it sprouts rather than fades in. */
-  const flame = doodle('candle');
-  flame.classList.add('gy-marker__candle', 'krk-boil');
+  /*
+   * The candle burns only where somebody lit one, and it sprouts rather than
+   * fades in. It carries no boil: it flickers already, and a boil filter that
+   * never stops — on however many graves hold a vigil — is the one cost this
+   * scene has actually been measured to care about.
+   */
+  const candle = doodle('candle');
+  candle.classList.add('gy-marker__candle');
+  candle.setAttribute('aria-hidden', 'true');
+  button.appendChild(candle);
+
+  const flame = document.createElement('span');
+  flame.className = 'gy-marker__flame';
+  flame.setAttribute('aria-hidden', 'true');
   button.appendChild(flame);
 
   const label = document.createElement('span');

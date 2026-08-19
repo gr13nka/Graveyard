@@ -15,7 +15,7 @@
  * to know any of the arithmetic below.
  */
 
-import { MARKER_VARIANTS } from './marker.js';
+import { markerVariantsFor } from './marker.js';
 
 /* Road position and the two fields either side of it, as % of scene width. */
 const ROAD_X = 58;
@@ -109,9 +109,12 @@ export function layOutGraveyard(projects) {
       const depth = shape.rows - 1 - slot.row;
       const scale = lerp(BACK_SCALE, 1, shape.rows === 1 ? 1 : slot.row / (shape.rows - 1));
 
-      const variant = project.marker && MARKER_VARIANTS.includes(project.marker)
+      /* Only the markers its kind may stand under: a marker naming one from
+         the other pool falls back to the hash, exactly as a typo does. */
+      const variants = markerVariantsFor(project.kind);
+      const variant = variants.includes(project.marker)
         ? project.marker
-        : MARKER_VARIANTS[hash(slug) % MARKER_VARIANTS.length];
+        : variants[hash(slug) % variants.length];
 
       plots.push({
         project,
@@ -125,6 +128,10 @@ export function layOutGraveyard(projects) {
         size: Math.round(lerp(112, 146, roll(slug, 4)) * scale),
         depth,
         tilt: lerp(-4, 4, roll(slug, 5)),
+        /* Phase for anything that loops at this grave — today, the flicker of
+           a candle somebody lit. Hashed like everything else here, so eight
+           flames drift apart without the yard becoming random at runtime. */
+        seed: roll(slug, 7),
         motifs: ambientFor(slug, shape.side),
       });
     }

@@ -24,7 +24,7 @@
  */
 
 import { repoFromLocation, fileStore } from './github.js';
-import { MARKER_VARIANTS } from './marker.js';
+import { markerVariantsFor } from './marker.js';
 
 const TOKEN_KEY = 'gy_token';
 const REPO_KEY = 'gy_repo';
@@ -32,17 +32,36 @@ const DATA_PATH = 'data/projects.json';
 
 /* The fields worth editing by hand. Everything else about a grave — where it
    stands, what grows round it — derives from the slug and has nowhere to be
-   typed. */
+   typed. `kind` is not here either: like the slug, it is settled at burial, and
+   it decides which markers the grave may stand under.
+
+   `only` limits a field to one kind of grave. An idea was never born and has
+   no repository; a project has no autopsy. Offering either the other's fields
+   would invite writing a birthday for something that was never born. */
 const FIELDS = [
   { key: 'epitaph', label: 'Epitaph', type: 'text', hint: 'One line. The only part anyone reads twice.' },
   { key: 'cause', label: 'Cause of death', type: 'text' },
+  { key: 'cause', label: 'Never born, because', type: 'text', only: 'idea' },
   { key: 'description', label: 'Description', type: 'area' },
   { key: 'name', label: 'Name', type: 'text' },
   { key: 'marker', label: 'Marker', type: 'marker' },
-  { key: 'born', label: 'Born', type: 'date' },
+  { key: 'born', label: 'Born', type: 'date', only: 'project' },
   { key: 'died', label: 'Died', type: 'date' },
-  { key: 'repo', label: 'Repo URL', type: 'text' },
+  { key: 'died', label: 'Filtered', type: 'date', only: 'idea' },
+  { key: 'repo', label: 'Repo URL', type: 'text', only: 'project' },
+  { key: 'autopsy', label: 'Autopsy', type: 'text', only: 'idea', hint: 'Path in this repo, e.g. autopsies/kopia-backup.md' },
 ];
+
+/* The label differs by kind, so a key can appear twice above — take the entry
+   that names this kind, else the one that names none. */
+function fieldsFor(kind) {
+  const chosen = new Map();
+  for (const field of FIELDS) {
+    if (field.only && field.only !== kind) continue;
+    if (field.only || !chosen.has(field.key)) chosen.set(field.key, field);
+  }
+  return [...chosen.values()];
+}
 
 const el = (tag, className, text) => {
   const node = document.createElement(tag);
@@ -90,8 +109,9 @@ export function mountEditor(panel, { projects, rebuild, reselect }) {
     const form = el('div', 'gy-form');
     form.appendChild(el('p', 'gy-form__slug', project.slug));
 
+    const kind = project.kind ?? 'project';
     const inputs = new Map();
-    for (const field of FIELDS) {
+    for (const field of fieldsFor(kind)) {
       const row = el('label', 'gy-form__row');
       row.appendChild(el('span', 'gy-form__label', field.label));
 
@@ -99,7 +119,7 @@ export function mountEditor(panel, { projects, rebuild, reselect }) {
       if (field.type === 'marker') {
         input = document.createElement('select');
         input.appendChild(new Option('(from the slug)', ''));
-        MARKER_VARIANTS.forEach((name) => input.appendChild(new Option(name, name)));
+        markerVariantsFor(kind).forEach((name) => input.appendChild(new Option(name, name)));
       } else if (field.type === 'area') {
         input = document.createElement('textarea');
         input.rows = 4;

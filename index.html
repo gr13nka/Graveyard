@@ -34,10 +34,12 @@
     import { mountScene } from './js/scene.js';
     import { mountEpitaph } from './js/epitaph.js';
     import { mountCandle } from './js/candle.js';
+    import { mountAutopsyReader } from './js/autopsy.js';
 
     const MOTIFS = [
       'headstone-round', 'headstone-cross', 'obelisk', 'urn', 'mound',
-      'fence-post', 'lantern', 'candle',
+      'cairn', 'stake',
+      'fence-post', 'lantern', 'candle', 'candle-out', 'match', 'matchbox', 'flame',
       'moon', 'star', 'cloud', 'spark', 'tree', 'flower-daisy', 'leaf',
       'sprout', 'arrow-right', 'baton-sleep', 'shadow-blob',
     ];
@@ -75,6 +77,9 @@
     }
 
     function rebuild() {
+      /* The scene about to be replaced still holds observers and a vigil
+         subscription; the DOM they watch is a moment from being thrown away. */
+      scene?.destroy();
       const years = projects.map((p) => String(p.died).slice(0, 4)).sort();
       scene = mountScene(sceneEl, layOutGraveyard(projects), {
         heading: {
@@ -93,6 +98,22 @@
     }
 
     rebuild();
+
+    /* The panel throws its contents away on every show(), so the listeners live
+       on the container that survives it. A cue when the match catches and one
+       when the candle takes — and nothing on a failed strike, which would turn
+       the quietest moment on the site into a rattle. */
+    const panelEl = document.getElementById('epitaph');
+    panelEl.addEventListener('gy:strike', () => krk?.play(CUES.pick));
+    panelEl.addEventListener('gy:lit', () => krk?.play(CUES.moment));
+
+    /* The reader lives on <body>: rebuild() clears the scene and every show()
+       throws the panel away, and an open report must survive both. */
+    const reader = mountAutopsyReader();
+    panelEl.addEventListener('gy:autopsy', (e) => {
+      reader.open(e.detail, e.target);
+      krk?.play(CUES.tap);
+    });
 
     /* The editor exists only behind ?edit — a visitor never sees an affordance,
        and finding the URL gets them nothing without a token. */
