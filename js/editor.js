@@ -24,11 +24,11 @@
  */
 
 import { repoFromLocation, fileStore } from './github.js';
+import { MARKER_VARIANTS } from './marker.js';
 
 const TOKEN_KEY = 'gy_token';
 const REPO_KEY = 'gy_repo';
 const DATA_PATH = 'data/projects.json';
-const MARKERS = ['headstone-round', 'headstone-cross', 'obelisk', 'urn', 'mound'];
 
 /* The fields worth editing by hand. Everything else about a grave — where it
    stands, what grows round it — derives from the slug and has nowhere to be
@@ -99,7 +99,7 @@ export function mountEditor(panel, { projects, rebuild, reselect }) {
       if (field.type === 'marker') {
         input = document.createElement('select');
         input.appendChild(new Option('(from the slug)', ''));
-        MARKERS.forEach((name) => input.appendChild(new Option(name, name)));
+        MARKER_VARIANTS.forEach((name) => input.appendChild(new Option(name, name)));
       } else if (field.type === 'area') {
         input = document.createElement('textarea');
         input.rows = 4;

@@ -53,6 +53,42 @@ compose with `transform` rather than replacing it.
 not preloaded, and an unhandled throw inside `mountScene` leaves a half-built scene with no
 obvious cause.
 
+**`mountScene` clears its root, and that is the rebuild mechanism.** To redraw after the
+data changes — a new marker, a different death date, an exhumed grave — call it again with
+fresh plots rather than patching the DOM. Two consequences: anything else living in the same
+frame is wiped, so **`mountCandle` has to be re-mounted after every rebuild** (see
+`rebuild()` in `index.html`); and `rebuild()` deliberately does not touch the epitaph panel,
+because an edit redraws the yard while its form is still open in that panel.
+
+**Adding a marker variant touches three places**, and there is no single list to add it to:
+
+1. `doodles/<name>.svg` — drawn to the 48×48 stroke-only contract.
+2. `ENGRAVING` in `js/marker.js` — where its dates are carved. `MARKER_VARIANTS` derives
+   from these keys, so the scene and the editor's dropdown both follow automatically.
+3. `MOTIFS` in `index.html`, or `doodle()` throws.
+
+`tools/bury.mjs` keeps its own copy of the list, and has to: it runs in Node, and importing
+`js/marker.js` would drag in `js/doodles.js`, which needs `fetch` and `document`. That
+duplicate is a deliberate consequence of the browser/Node boundary, not an oversight.
+
+**Engraved dates must fit the carved face.** `ENGRAVING` tunes size and position per marker
+because a headstone has a broad face and an obelisk does not; narrow markers carry one line
+(the death year) rather than two. When adding or reshaping a marker, measure the text's
+bounding box against the path's — eyeballing a screenshot misses overflow of a few pixels.
+
+## Colour
+
+`<html data-palette="…">` in `index.html` picks the palette; `css/palettes.css` defines four
+(`a` warm dusk, `b` cool indigo, `c` canon cream, `d` dark scene on cream chrome). The site
+runs **`b`**. They exist because the palette was chosen by eye from mockups, and they are
+kept so the choice can be revisited without rebuilding anything — changing that one attribute
+re-skins the entire site.
+
+Each palette also defines the scene's own tones on top of the kit's: `--gy-near` / `--gy-mid`
+/ `--gy-far` for atmospheric depth, `--gy-lamp` for light, and `--gy-cast` for shadows.
+`--gy-cast` must sit **below** the ground tone in luminance — it was once `--gy-far`, a
+distance tone, and shadows visibly lightened whatever they fell on.
+
 ## The Karakuli kit
 
 `vendor/karakuli/` is copied verbatim from `~/Documents/karakuli` and **is never edited
