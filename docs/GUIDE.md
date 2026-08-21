@@ -140,7 +140,7 @@ When it is worth showing:
 ```bash
 git commit -am "My graveyard"
 git push
-gh api -X POST repos/:owner/Graveyard/pages \
+gh api -X POST 'repos/{owner}/{repo}/pages' \
   -f 'source[branch]=main' -f 'source[path]=/'
 ```
 

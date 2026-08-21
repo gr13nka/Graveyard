@@ -23,28 +23,53 @@ light a candle at the grave.
 
 <img src="docs/images/candle.gif" alt="A match is struck on the box, carried up to the wick, and the candle catches" width="400">
 
+Read a grave to the end and there is a candle, a matchbox and a match. Strike it sideways,
+then carry it to the wick before it burns down to your fingers — you have five seconds. The
+candle keeps burning at the foot of that grave, and is still lit when you come back.
+
+They are your candles, in this browser: no count, no server, nobody else's to see.
+[The whole ritual →](docs/GUIDE.md#lighting-a-candle)
+
 ## Host it in your Github without server
 
-1. Fork it:
-2. Publish it:
-```bash
-git push
-gh api -X POST repos/:owner/Graveyard/pages -f 'source[branch]=main' -f 'source[path]=/'
-```
+1. **Fork it.** `bury.mjs` asks `gh` who *you* are, so the fork is yours with nothing to edit.
+
+   ```bash
+   gh repo fork gr13nka/Graveyard --clone
+   cd Graveyard
+   echo '[]' > data/projects.json     # empty the yard — these graves are mine
+   python3 -m http.server 8000        # → http://localhost:8000
+   ```
+
+   It has to be served over http. Opened as a `file://` URL every ES module fails silently
+   and the page just looks half-drawn — there is no error to explain why.
+
+2. **Publish it.** Pages serves the fork at `https://<your-username>.github.io/Graveyard/`.
+
+   ```bash
+   git commit -am "My graveyard"
+   git push
+   gh api -X POST 'repos/{owner}/{repo}/pages' -f 'source[branch]=main' -f 'source[path]=/'
+   ```
+
+   Every path in the page is relative, so the `/Graveyard/` subpath needs no configuration,
+   and renaming the repo or moving it to a custom domain keeps working. Pages needs the repo
+   to be **public** unless you are on a paid plan — and a graveyard names every repo in it.
 
 ## Use it with your agent to easily bury your projects and show your graveyard to other people.
 
-Below should go the instructions super simple how to use this yourself or just how to use it with any agent. 
+The whole thing is two Node scripts and one JSON file, so an agent can drive it end to end.
+Open your fork in Claude Code — or any agent — and paste this:
 
+> Read CLAUDE.md first. Then run `node tools/bury.mjs --list` and show me my stalest repos.
+> For each one I pick, run `node tools/bury.mjs <repo>` — take the description and the dates
+> from GitHub, but leave the epitaph and the cause blank for me to write. When I have filled
+> them in, commit and push.
 
-Publish it:
-
-```bash
-git push
-gh api -X POST repos/:owner/Graveyard/pages -f 'source[branch]=main' -f 'source[path]=/'
-```
-
-`bury.mjs` asks `gh` who *you* are, so a fork becomes your graveyard unedited.
+`CLAUDE.md` is written for exactly this: it holds the invariants an agent would otherwise
+break, like the fact that a grave's position comes from a hash of its slug, so **renaming a
+slug moves the grave**. Ask for the epitaph to be generated and you will get something that
+reads exactly like a generated epitaph — that one line is the only part anyone reads twice.
 
 ## Bury a project
 
