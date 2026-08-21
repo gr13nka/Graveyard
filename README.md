@@ -66,7 +66,7 @@ the graves. [How an idea's grave differs →](docs/GUIDE.md#how-an-ideas-grave-d
 
 ## Light a candle
 
-<img src="docs/images/candle.gif" alt="A match is struck on the box, carried up to the wick, and the candle catches" width="360">
+<img src="docs/images/candle.gif" alt="A match is struck on the box, carried up to the wick, and the candle catches" width="400">
 
 Drag the match onto the box, scrub it sideways until it catches, then carry it up to the
 wick — you have five seconds before it burns down to your fingers. The candle then burns at
