@@ -1,0 +1,15 @@
+{
+  "_": "Reproduces docs/images/hero.png. From the craft-readme skill dir:",
+  "_run": "node scripts/capture.mjs /path/to/Graveyard/docs/hero.spec.json",
+  "serve": "..",
+  "path": "/",
+  "viewport": { "width": 1600, "height": 800, "dsf": 2 },
+  "settle": 2200,
+  "steps": [
+    { "eval": "document.querySelector('.gy-scene').scrollTop = 630" },
+    { "click": "[aria-label*='TwinStickDraft']", "wait": 1400 },
+    { "hover": [478, 618], "wait": 500 }
+  ],
+  "radius": 16,
+  "out": "docs/images/hero.png"
+}
