@@ -23,12 +23,9 @@ light a candle at the grave.
 
 <img src="docs/images/candle.gif" alt="A match is struck on the box, carried up to the wick, and the candle catches" width="400">
 
-Read a grave to the end and there is a candle, a matchbox and a match. Strike it sideways,
-then carry it to the wick before it burns down to your fingers — you have five seconds. The
-candle keeps burning at the foot of that grave, and is still lit when you come back.
-
-They are your candles, in this browser: no count, no server, nobody else's to see.
-[The whole ritual →](docs/GUIDE.md#lighting-a-candle)
+Anyone visiting your graveyard can light a candle at a grave, and it is still burning when
+they come back. Candles live in that visitor's browser, so there is no count and nobody
+else's to see. [How it works →](docs/GUIDE.md#lighting-a-candle)
 
 ## Host it in your Github without server
 
@@ -41,8 +38,8 @@ They are your candles, in this browser: no count, no server, nobody else's to se
    python3 -m http.server 8000        # → http://localhost:8000
    ```
 
-   It has to be served over http. Opened as a `file://` URL every ES module fails silently
-   and the page just looks half-drawn — there is no error to explain why.
+   It has to be served over http: as a `file://` URL every ES module fails silently and the
+   page renders half-drawn, with no error to explain why.
 
 2. **Publish it.** Pages serves the fork at `https://<your-username>.github.io/Graveyard/`.
 
@@ -52,24 +49,22 @@ They are your candles, in this browser: no count, no server, nobody else's to se
    gh api -X POST 'repos/{owner}/{repo}/pages' -f 'source[branch]=main' -f 'source[path]=/'
    ```
 
-   Every path in the page is relative, so the `/Graveyard/` subpath needs no configuration,
-   and renaming the repo or moving it to a custom domain keeps working. Pages needs the repo
-   to be **public** unless you are on a paid plan — and a graveyard names every repo in it.
+   Paths are relative, so the `/Graveyard/` subpath needs no configuration and a rename or a
+   custom domain keeps working. Pages needs the repo to be **public** unless you are on a
+   paid plan — and a graveyard names every repo in it.
 
 ## Use it with your agent to easily bury your projects and show your graveyard to other people.
 
-The whole thing is two Node scripts and one JSON file, so an agent can drive it end to end.
-Open your fork in Claude Code — or any agent — and paste this:
+It is two Node scripts and one JSON file, so an agent can drive the whole thing. Open your
+fork in Claude Code — or any agent — and paste this:
 
 > Read CLAUDE.md first. Then run `node tools/bury.mjs --list` and show me my stalest repos.
 > For each one I pick, run `node tools/bury.mjs <repo>` — take the description and the dates
 > from GitHub, but leave the epitaph and the cause blank for me to write. When I have filled
 > them in, commit and push.
 
-`CLAUDE.md` is written for exactly this: it holds the invariants an agent would otherwise
-break, like the fact that a grave's position comes from a hash of its slug, so **renaming a
-slug moves the grave**. Ask for the epitaph to be generated and you will get something that
-reads exactly like a generated epitaph — that one line is the only part anyone reads twice.
+`CLAUDE.md` holds the invariants an agent would otherwise break — chief among them that a
+grave's position is a hash of its slug, so **renaming a slug moves the grave**.
 
 ## Bury a project
 
@@ -79,9 +74,9 @@ node tools/bury.mjs TwinStickDraft \
   --cause "got interested in something else on a Thursday"
 ```
 
-It takes the description from the repo's own README and the two dates from GitHub. It will
-not write the epitaph or the cause — those are the only part worth reading, and a generated
-one reads exactly like a generated one. [Every flag →](docs/GUIDE.md#burying-a-project)
+It takes the description from the repo's own README and both dates from GitHub. It will not
+write the epitaph or the cause; you supply those.
+[Every flag →](docs/GUIDE.md#burying-a-project)
 
 ## Bury an idea that was never built
 
@@ -89,9 +84,9 @@ one reads exactly like a generated one. [Every flag →](docs/GUIDE.md#burying-a
 node tools/autopsy.mjs ~/handoffs/handoff-kopia-backup.md --epitaph "..." --cause "..."
 ```
 
-No repo, no birthday, and a cairn instead of a headstone — it never lived, so the yard
-carves one date rather than inventing a lifespan. The analysis that killed it opens over
-the graves. [How an idea's grave differs →](docs/GUIDE.md#how-an-ideas-grave-differs)
+No repo, no birthday, and a cairn instead of a headstone: one date carved rather than a
+lifespan. The report that killed it opens in the page.
+[How an idea's grave differs →](docs/GUIDE.md#how-an-ideas-grave-differs)
 
 
 ## Edit from the page
