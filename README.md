@@ -8,12 +8,12 @@
 ![no build step](https://img.shields.io/badge/build-none-8b8b8b?style=flat-square)
 ![zero dependencies](https://img.shields.io/badge/dependencies-0-8b8b8b?style=flat-square)
 
-**A scrollable cemetery of dead projects.**
+**Cosy cemetery of your dead projects.**
 
-Bury a repo with one command, write its epitaph, and let people
+You can bury a repo with one command, write its epitaph, and let people
 light a candle at the grave.
 
-**[Walk through it →](https://gr13nka.github.io/Graveyard/)**
+**[Walk through my →](https://gr13nka.github.io/Graveyard/)**
 
 <img src="docs/images/hero.png" alt="A night graveyard: headstones in plots either side of a lit path, lanterns between them" width="100%">
 
