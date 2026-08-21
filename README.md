@@ -23,27 +23,15 @@ light a candle at the grave.
 
 <img src="docs/images/candle.gif" alt="A match is struck on the box, carried up to the wick, and the candle catches" width="400">
 
-Drag the match onto the box, scrub it sideways until it catches, then carry it up to the
-wick — you have five seconds before it burns down to your fingers. The candle then burns at
-the foot of that grave, and is still burning when you come back.
+Light the candle to show your honour to the burried project.
 
-**They are your candles, in this browser.** No count, no server, nobody else's to see: a
-static page cannot know whether anyone else lit anything, and pretending otherwise would
-be the one dishonest thing on the site. [The whole ritual →](docs/GUIDE.md#lighting-a-candle)
+## Host it in your Github without server
 
-## Make your own
 
-```bash
-gh repo fork gr13nka/Graveyard --clone --fork-name Graveyard
-cd Graveyard
-echo '[]' > data/projects.json     # empty the yard; these graves are mine
-node tools/bury.mjs --list         # your stalest repos
-node tools/bury.mjs <repo> --epitaph "..." --cause "..."
-python3 -m http.server 8000        # look at it
-```
+## Use it with your agent to easily bury your projects and show your graveyard to other people.
 
-Nothing to install and no build step — but it **must be served over http**. Opened as a
-`file://` URL every ES module fails silently and the page just looks half-drawn.
+Below should go the instructions super simple how to use this yourself or just how to use it with any agent. 
+
 
 Publish it:
 
