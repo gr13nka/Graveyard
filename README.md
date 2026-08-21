@@ -19,14 +19,18 @@ light a candle at the grave.
 
 </div>
 
-## Light a candle
+## Light a candle to show your honour
 
 <img src="docs/images/candle.gif" alt="A match is struck on the box, carried up to the wick, and the candle catches" width="400">
 
-Light the candle to show your honour to the burried project.
-
 ## Host it in your Github without server
 
+1. Fork it:
+2. Publish it:
+```bash
+git push
+gh api -X POST repos/:owner/Graveyard/pages -f 'source[branch]=main' -f 'source[path]=/'
+```
 
 ## Use it with your agent to easily bury your projects and show your graveyard to other people.
 
