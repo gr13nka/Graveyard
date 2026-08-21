@@ -27,7 +27,20 @@ Anyone visiting your graveyard can light a candle at a grave, and it is still bu
 they come back. Candles live in that visitor's browser, so there is no count and nobody
 else's to see. [How it works →](docs/GUIDE.md#lighting-a-candle)
 
-## Host it in your Github without server
+## Use it with your agent to easily bury your projects and show your graveyard to other people.
+
+To create your own fork the repo, then open your
+fork in Claude Code - or any agent - and paste this:
+
+> Read CLAUDE.md first. Then run `node tools/bury.mjs --list` and show me my stalest repos.
+> For each one I pick, run `node tools/bury.mjs <repo>` — take the description and the dates
+> from GitHub, but leave the epitaph and the cause blank for me to write. When I have filled
+> them in, commit and push.
+
+`CLAUDE.md` holds the invariants an agent would otherwise break — chief among them that a
+grave's position is a hash of its slug, so **renaming a slug moves the grave**.
+
+## Host it manualy in your Github without server
 
 1. **Fork it.** `bury.mjs` asks `gh` who *you* are, so the fork is yours with nothing to edit.
 
@@ -52,19 +65,6 @@ else's to see. [How it works →](docs/GUIDE.md#lighting-a-candle)
    Paths are relative, so the `/Graveyard/` subpath needs no configuration and a rename or a
    custom domain keeps working. Pages needs the repo to be **public** unless you are on a
    paid plan — and a graveyard names every repo in it.
-
-## Use it with your agent to easily bury your projects and show your graveyard to other people.
-
-It is two Node scripts and one JSON file, so an agent can drive the whole thing. Open your
-fork in Claude Code — or any agent — and paste this:
-
-> Read CLAUDE.md first. Then run `node tools/bury.mjs --list` and show me my stalest repos.
-> For each one I pick, run `node tools/bury.mjs <repo>` — take the description and the dates
-> from GitHub, but leave the epitaph and the cause blank for me to write. When I have filled
-> them in, commit and push.
-
-`CLAUDE.md` holds the invariants an agent would otherwise break — chief among them that a
-grave's position is a hash of its slug, so **renaming a slug moves the grave**.
 
 ## Bury a project
 
