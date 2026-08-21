@@ -19,6 +19,18 @@ light a candle at the grave.
 
 </div>
 
+## Light a candle
+
+<img src="docs/images/candle.gif" alt="A match is struck on the box, carried up to the wick, and the candle catches" width="400">
+
+Drag the match onto the box, scrub it sideways until it catches, then carry it up to the
+wick — you have five seconds before it burns down to your fingers. The candle then burns at
+the foot of that grave, and is still burning when you come back.
+
+**They are your candles, in this browser.** No count, no server, nobody else's to see: a
+static page cannot know whether anyone else lit anything, and pretending otherwise would
+be the one dishonest thing on the site. [The whole ritual →](docs/GUIDE.md#lighting-a-candle)
+
 ## Make your own
 
 ```bash
@@ -64,17 +76,6 @@ No repo, no birthday, and a cairn instead of a headstone — it never lived, so 
 carves one date rather than inventing a lifespan. The analysis that killed it opens over
 the graves. [How an idea's grave differs →](docs/GUIDE.md#how-an-ideas-grave-differs)
 
-## Light a candle
-
-<img src="docs/images/candle.gif" alt="A match is struck on the box, carried up to the wick, and the candle catches" width="400">
-
-Drag the match onto the box, scrub it sideways until it catches, then carry it up to the
-wick — you have five seconds before it burns down to your fingers. The candle then burns at
-the foot of that grave, and is still burning when you come back.
-
-**They are your candles, in this browser.** No count, no server, nobody else's to see: a
-static page cannot know whether anyone else lit anything, and pretending otherwise would
-be the one dishonest thing on the site. [The whole ritual →](docs/GUIDE.md#lighting-a-candle)
 
 ## Edit from the page
 
