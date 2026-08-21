@@ -3,8 +3,9 @@
 A scrollable cemetery of dead projects. Static site, no build step, no dependencies.
 Served over http, published to GitHub Pages from `main` at the repo root.
 
-`README.md` explains what the project is and how to use it. This file is only the things
-that are non-obvious and have already cost time.
+`README.md` is the landing page — what the project is and the shortest way in.
+`docs/GUIDE.md` is the usage reference: every flag, the data file, the `?edit` token.
+This file is only the things that are non-obvious and have already cost time.
 
 ## Running and verifying
 
@@ -226,8 +227,8 @@ here**. Override in `css/graveyard.css` instead. Two traps:
   already in place re-cuts them as CSS masks driven by `currentColor`.
 - CSS load order is load-bearing: `tokens.css` before `karakuli.css`.
 
-Two deliberate departures from the kit, both documented in `README.md` so they don't get
-"fixed" back:
+Two deliberate departures from the kit, both documented in `docs/GUIDE.md` so they don't
+get "fixed" back:
 
 - **The dark ground** — the kit's paper is cream. This is the kit's unsettled *Dark mode*
   item, living here as a local override.
