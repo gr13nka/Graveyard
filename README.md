@@ -41,6 +41,18 @@ Opened as a `file://` URL the modules fail silently, so serve it. Bury your firs
 (below), then publish to Pages when it's worth showing.
 [Fork & publish in full →](docs/GUIDE.md#making-your-own)
 
+## Drive it with an agent
+
+To make your own, fork the repo and open it in Claude Code — or any agent — and paste this:
+
+> Read CLAUDE.md first. Then run `node tools/bury.mjs --list` and show me my stalest repos.
+> For each one I pick, run `node tools/bury.mjs <repo>` — take the description and the dates
+> from GitHub, but leave the epitaph and the cause blank for me to write. When I have filled
+> them in, commit and push.
+
+`CLAUDE.md` holds the invariants an agent would otherwise break — chief among them that a
+grave's position is a hash of its slug, so **renaming a slug moves the grave**.
+
 ## Bury a project
 
 ```bash
@@ -67,18 +79,6 @@ For an idea that died before any code — a cairn, not a headstone.
 
 Add `?edit` to the URL to edit graves in place; Save commits to GitHub, no server.
 [Setting it up →](docs/GUIDE.md#editing-from-the-page)
-
-## Drive it with an agent
-
-To make your own, fork the repo and open it in Claude Code — or any agent — and paste this:
-
-> Read CLAUDE.md first. Then run `node tools/bury.mjs --list` and show me my stalest repos.
-> For each one I pick, run `node tools/bury.mjs <repo>` — take the description and the dates
-> from GitHub, but leave the epitaph and the cause blank for me to write. When I have filled
-> them in, commit and push.
-
-`CLAUDE.md` holds the invariants an agent would otherwise break — chief among them that a
-grave's position is a hash of its slug, so **renaming a slug moves the grave**.
 
 ## Docs
 
