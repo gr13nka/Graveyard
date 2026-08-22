@@ -19,14 +19,13 @@ You have the folder. Thirty-odd repos you'll get back to any day now. You won't.
 Graveyard buries them. Each one gets a headstone with the years it ran, a line for the
 epitaph, and a line for what killed it. People can leave a candle.
 
-No server, no database, no build. The page commits to itself.
+No server, no database, no build.
 
 ## Light a candle to show your honour
 
 <img src="docs/images/candle.gif" alt="A match is struck on the box, carried up to the wick, and the candle catches" width="400">
 
-Scroll a grave to the bottom and there's a candle. Light it before the match burns down.
-It's still lit when you come back, only you can see it, and there's no counter.
+Scroll a grave to the bottom and there's a candle. 
 [How it works →](docs/GUIDE.md#lighting-a-candle)
 
 ## Quick start
@@ -45,7 +44,7 @@ Bury something (below), push to Pages when it's worth showing.
 
 ## Drive it with an agent
 
-You have the repos. An agent has the free time. Open your fork in Claude Code, or whatever
+Open your fork in Claude Code, or whatever
 you use, and paste this:
 
 > Read CLAUDE.md first. Then run `node tools/bury.mjs --list` and show me my stalest repos.
