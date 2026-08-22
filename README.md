@@ -23,9 +23,8 @@ light a candle at the grave.
 
 <img src="docs/images/candle.gif" alt="A match is struck on the box, carried up to the wick, and the candle catches" width="400">
 
-Anyone visiting your graveyard can light a candle at a grave, and it is still burning when
-they come back. Candles live in that visitor's browser, so there is no count and nobody
-else's to see. [How it works →](docs/GUIDE.md#lighting-a-candle)
+Visitors can light a candle at a grave, privately, in their own browser.
+[How it works →](docs/GUIDE.md#lighting-a-candle)
 
 ## Bury a project
 
@@ -35,8 +34,7 @@ node tools/bury.mjs TwinStickDraft \
   --cause "got interested in something else on a Thursday"
 ```
 
-It takes the description from the repo's own README and both dates from GitHub. It will not
-write the epitaph or the cause; you supply those.
+One command per grave; you write the epitaph.
 [Every flag →](docs/GUIDE.md#burying-a-project)
 
 ## Bury an idea that was never built
@@ -45,17 +43,15 @@ write the epitaph or the cause; you supply those.
 node tools/autopsy.mjs ~/handoffs/handoff-kopia-backup.md --epitaph "..." --cause "..."
 ```
 
-No repo, no birthday, and a cairn instead of a headstone: one date carved rather than a
-lifespan. The report that killed it opens in the page.
+For an idea that died before any code — a cairn, not a headstone.
 [How an idea's grave differs →](docs/GUIDE.md#how-an-ideas-grave-differs)
 
 ## Edit from the page
 
 <img src="docs/images/edit.png" alt="A grave selected with ?edit on: the panel is a form for its epitaph, cause, dates and marker" width="100%">
 
-Add `?edit` to the URL and the panel becomes a form — epitaph, cause, dates, marker, and an
-exhume button. Save commits `data/projects.json` straight to GitHub through the Contents
-API, so there is still no server. [Setting it up →](docs/GUIDE.md#editing-from-the-page)
+Add `?edit` to the URL to edit graves in place; Save commits to GitHub, no server.
+[Setting it up →](docs/GUIDE.md#editing-from-the-page)
 
 ## Drive it with an agent
 
