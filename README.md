@@ -14,23 +14,24 @@
 
 </div>
 
-Everyone has the folder. Forty repos, last touched in 2023, that you'll absolutely get back
-to. You won't. Graveyard gives each one a headstone — the years it lived, a one-line
-epitaph, and how it died — then lets people light a candle over the remains.
+You have the folder. Thirty-odd repos you'll get back to any day now. You won't.
 
-No server, no database, no build step. A static page that commits to itself.
+Graveyard buries them. Each one gets a headstone with the years it ran, a line for the
+epitaph, and a line for what killed it. People can leave a candle.
+
+No server, no database, no build. The page commits to itself.
 
 ## Light a candle to show your honour
 
 <img src="docs/images/candle.gif" alt="A match is struck on the box, carried up to the wick, and the candle catches" width="400">
 
-Read a grave to the end and there's a candle. Strike the match, mind your fingers. It keeps
-burning when you come back, and it's yours alone — nobody's counting.
+Scroll a grave to the bottom and there's a candle. Light it before the match burns down.
+It's still lit when you come back, only you can see it, and there's no counter.
 [How it works →](docs/GUIDE.md#lighting-a-candle)
 
 ## Quick start
 
-Fork it and run it. Over http — as a `file://` URL the modules die quietly:
+Fork it, run it. Over http — `file://` breaks every module and doesn't say so:
 
 ```bash
 gh repo fork gr13nka/Graveyard --clone
@@ -39,21 +40,21 @@ echo '[]' > data/projects.json     # empty the yard — these graves are mine
 python3 -m http.server 8000        # → http://localhost:8000
 ```
 
-Bury your first project (below), then publish to Pages when it's worth showing.
+Bury something (below), push to Pages when it's worth showing.
 [Fork & publish in full →](docs/GUIDE.md#making-your-own)
 
 ## Drive it with an agent
 
-You have the repos; an agent has the patience. Open your fork in Claude Code — or anything
-else — and paste this:
+You have the repos. An agent has the free time. Open your fork in Claude Code, or whatever
+you use, and paste this:
 
 > Read CLAUDE.md first. Then run `node tools/bury.mjs --list` and show me my stalest repos.
 > For each one I pick, run `node tools/bury.mjs <repo>` — take the description and the dates
 > from GitHub, but leave the epitaph and the cause blank for me to write. When I have filled
 > them in, commit and push.
 
-`CLAUDE.md` holds the invariants an agent would otherwise break — chief among them that a
-grave's position is a hash of its slug, so **renaming a slug moves the grave**.
+`CLAUDE.md` has the rules an agent will otherwise break. Main one: a grave's spot is a hash
+of its slug, so rename the slug and the grave moves.
 
 ## Bury a project
 
@@ -63,9 +64,8 @@ node tools/bury.mjs TwinStickDraft \
   --cause "got interested in something else on a Thursday"
 ```
 
-One command, one grave. It fills in everything but the epitaph and the cause of death —
-those are the only parts anyone reads, so they're yours to write.
-[Every flag →](docs/GUIDE.md#burying-a-project)
+One command, one grave. It writes everything but the epitaph and the cause of death. Those
+are the parts anyone reads, so you write them. [Every flag →](docs/GUIDE.md#burying-a-project)
 
 ## Bury an idea that was never built
 
@@ -73,30 +73,27 @@ those are the only parts anyone reads, so they're yours to write.
 node tools/autopsy.mjs ~/handoffs/handoff-kopia-backup.md --epitaph "..." --cause "..."
 ```
 
-Some die before the first commit. They get a cairn instead of a headstone and a single
-date: the day you admitted it wasn't happening.
-[How an idea's grave differs →](docs/GUIDE.md#how-an-ideas-grave-differs)
+Some die before the first commit. No repo, no birthday. A cairn and one date, the day you
+gave up. [How an idea's grave differs →](docs/GUIDE.md#how-an-ideas-grave-differs)
 
 ## Edit from the page
 
 <img src="docs/images/edit.png" alt="A grave selected with ?edit on: the panel is a form for its epitaph, cause, dates and marker" width="100%">
 
-`?edit` in the URL turns any grave into a form. Save commits straight to GitHub — still no
-server, still nothing to run. [Setting it up →](docs/GUIDE.md#editing-from-the-page)
+Add `?edit` to the URL. Graves become forms, Save writes to GitHub. Still no server.
+[Setting it up →](docs/GUIDE.md#editing-from-the-page)
 
 ## FAQ
 
-**Does it need a server?** No. It's a static page; the editor commits through a token you
-paste once. The whole thing runs out of a folder.
+**Needs a server?** No. It's a static page. The editor commits through a token you paste
+once.
 
-**Where do the candles go?** Into the visitor's own browser and nowhere else. No count, no
-leaderboard, nobody to impress — a grave has a candle for you, or it doesn't.
+**Where do the candles live?** Your browser. Not a database, because there is no database.
+No count, nobody else's to see.
 
-**What if it isn't really dead?** Then don't bury it. But the repo you haven't opened since
-2023 is not "on hold," and you know it.
+**It's not really dead though.** It's 2026 and you last touched it in 2023. It's dead.
 
-**Why would I want a graveyard?** Closure, mostly. It also reads better on your profile than
-a list of repos that stopped.
+**Why bother?** Closure. And it reads better than a profile full of repos that just stop.
 
 ## Docs
 
@@ -106,6 +103,5 @@ in [CLAUDE.md](CLAUDE.md).
 
 ## License
 
-MIT — dig one up, move it, make it your own. The drawing follows
-[Karakuli](https://github.com/gr13nka/karakuli), used unmodified apart from
-[two deliberate departures](docs/GUIDE.md#a-note-on-the-style).
+MIT. Dig one up, keep it. The drawing is [Karakuli](https://github.com/gr13nka/karakuli),
+used as-is bar [two changes](docs/GUIDE.md#a-note-on-the-style).
