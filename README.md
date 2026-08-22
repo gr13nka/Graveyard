@@ -26,6 +26,21 @@ light a candle at the grave.
 Visitors can light a candle at a grave, privately, in their own browser.
 [How it works →](docs/GUIDE.md#lighting-a-candle)
 
+## Quick start
+
+No server, no build — fork it and run it over http:
+
+```bash
+gh repo fork gr13nka/Graveyard --clone
+cd Graveyard
+echo '[]' > data/projects.json     # empty the yard — these graves are mine
+python3 -m http.server 8000        # → http://localhost:8000
+```
+
+Opened as a `file://` URL the modules fail silently, so serve it. Bury your first project
+(below), then publish to Pages when it's worth showing.
+[Fork & publish in full →](docs/GUIDE.md#making-your-own)
+
 ## Bury a project
 
 ```bash
@@ -64,33 +79,6 @@ To make your own, fork the repo and open it in Claude Code — or any agent — 
 
 `CLAUDE.md` holds the invariants an agent would otherwise break — chief among them that a
 grave's position is a hash of its slug, so **renaming a slug moves the grave**.
-
-## Publish it yourself
-
-No server, no build. Fork it — `bury.mjs` asks `gh` who *you* are, so the fork is yours with
-nothing to edit:
-
-```bash
-gh repo fork gr13nka/Graveyard --clone
-cd Graveyard
-echo '[]' > data/projects.json     # empty the yard — these graves are mine
-python3 -m http.server 8000        # → http://localhost:8000
-```
-
-It has to be served over http: as a `file://` URL every ES module fails silently and the
-page renders half-drawn, with no error to explain why.
-
-Then publish to GitHub Pages, which serves the fork at `https://<your-username>.github.io/Graveyard/`:
-
-```bash
-git commit -am "My graveyard"
-git push
-gh api -X POST 'repos/{owner}/{repo}/pages' -f 'source[branch]=main' -f 'source[path]=/'
-```
-
-Paths are relative, so the `/Graveyard/` subpath needs no configuration and a rename or a
-custom domain keeps working. Pages needs the repo to be **public** unless you are on a paid
-plan — and a graveyard names every repo in it.
 
 ## Docs
 
