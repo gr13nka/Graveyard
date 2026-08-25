@@ -38,19 +38,44 @@ exactly like real failures:
   into a 1×1 canvas and read the pixel back. SVG text also takes its colour from `fill`,
   not `color`, and its `font-size` is in user units rather than rendered pixels.
 
-An audit that skips those two does not fail loudly — it silently stops covering the
-engraved years, because `offsetParent` is null for every SVG node and the obvious
-visibility guard drops them all. Check the count: the yard alone is **44 text nodes, 16 of
-them engraved**. With an autopsy open it is around 400, since a rendered report is by far
-the largest block of text on the site.
+There is a third guard that drops them just as quietly: **opacity is not invisibility.**
+`.gy-engraving` is deliberately `0.82` — chalk cut into stone — so a visibility test that
+skips anything under full opacity throws away all sixteen engraved years *and still reports
+a pass*. Skip only what is at nothing (`< 0.05`), and fold the element's effective opacity
+into the foreground alpha before compositing, because 0.82 chalk over the stone is what the
+eye actually gets.
+
+An audit that skips those does not fail loudly — it silently stops covering the engraved
+years, because `offsetParent` is null for every SVG node and the obvious visibility guard
+drops them all. Check the count: the yard alone is **44 text nodes, 16 of them engraved**.
+With an autopsy open it is around 400, since a rendered report is by far the largest block
+of text on the site. Measure that number rather than trusting it — it moves whenever chrome
+is added (the two ground headers and the panel's close button moved it from 39), and a
+stale count is worse than none, since the whole point of it is to catch a silent hole.
 
 ## Invariants
 
-**Placement derives from a hash of the slug.** `js/plots.js` computes side, column, marker
-variant, tilt and undergrowth from `hash(slug)`. Nothing about layout is stored in
+**Placement derives from a hash of the slug — except which side.** `js/plots.js` computes
+column, marker variant, tilt and undergrowth from `hash(slug)`. Side is the grave's *kind*:
+repos fill the left field, ideas the right, and the road between them is the boundary rather
+than just a thing running down the middle. Nothing about layout is stored in
 `data/projects.json`, and nothing is random at runtime — so the yard is identical on every
-reload. The consequence: **changing a project's `slug` moves its grave.** Its `name` is free
-to change.
+reload. The consequence: **changing a project's `slug` moves its grave** within its ground,
+and **changing its `kind` moves it across the road.** Its `name` is free to change.
+
+**One packer lays out both yards.** `packBlocks(graves, sideAt)` takes a callback deciding
+which side each block stands on, so the split (every block on one side) and the fallback for
+a yard holding only one kind (blocks alternating down both fields) are the same algorithm
+answering one question differently. That fallback is not decoration: a fork on its first day
+has repos and no ideas, and would otherwise get a yard with one half empty. Do not grow a
+second layout function for it — it would have to be kept in step with this one forever.
+
+**Lanterns are spaced evenly, not placed between blocks.** They used to sit in the gaps
+between consecutive blocks, which was a way of saying "not beside a grave" back when blocks
+alternated and the road had plots against it only every other block. Now each field is a
+kind, the road has graves along both sides for its whole length, and there are no gaps left
+to find — following the old rule put *one* lantern in the entire yard. `LAMP_STEP` is the
+rhythm now. Milestones still push a lamp aside rather than deleting it.
 
 **Only `.gy-marker__stone` may be tinted, never the name label.** Lighting mixes the stone's
 colour toward the lamp colour. Tinting the label too would put text contrast at the mercy of
@@ -131,6 +156,24 @@ stilling it would leave a match burning forever.
 not preloaded, and an unhandled throw inside `mountScene` leaves a half-built scene with no
 obvious cause.
 
+**`rebuild()` must destroy the candle before re-mounting it.** `mountScene` wipes the frame,
+which detaches the candle's element but leaves its `pointermove` and `pointerleave`
+listeners bound to the frame that survives. Without the `destroy()`, every rebuild stacks
+another handler writing transforms into a node that is no longer in the document — editing
+graves is the only path that rebuilds, but nothing bounds how often that happens.
+
+**Every layout read in `castLight()` happens before the first style write.** The halo's
+`left`/`top` used to be written between the `clientWidth` read and the `getBoundingClientRect`
+below it, so each frame the pointer moved flushed those writes and laid out the whole field
+again mid-pass. Hoisting the reads took forced layouts during a hover from ~37 a second to
+13. Anything added there reads first and writes second.
+
+**`pointer` is stored in viewport coordinates on purpose, and scrolling must recast.** The
+field position of a stationary pointer changes as the yard scrolls under it, so the
+conversion happens at use time. Scrolling therefore costs what hovering costs — that is
+correct, not a bug to optimise away by clearing `pointer` on scroll, which would detach the
+carried candle's glow from the cursor.
+
 **`mountScene` clears its root, and that is the rebuild mechanism.** To redraw after the
 data changes — a new marker, a different death date, an exhumed grave — call it again with
 fresh plots rather than patching the DOM. Two consequences: anything else living in the same
@@ -190,6 +233,27 @@ line per paragraph, so a break inside one really is a wrap.
 panel away; an open report must survive both. The panel therefore does not own it — the
 autopsy button dispatches `gy:autopsy` and `index.html` opens the reader, the same shape as
 the matchbox's `gy:strike` / `gy:lit`.
+
+**The panel's way out is narrow-only, and dismissal is the empty state.** Below 900px the
+two panes become one and the epitaph is a fixed sheet over the foot of the yard. Closing is
+`showEmpty()` plus dropping the selection — `.gy-epitaph.is-empty` is `display: none` in
+that media query, so there is no third state to hold. The same rule is what keeps the yard
+whole before anything is picked: the sleeping-cat empty state is a wide-screen affordance,
+and on a phone it was 62vh of nothing sitting on the graveyard with no way out from under
+it. On desktop the close button is hidden, because there the panel covers nothing.
+
+**There is deliberately no backdrop behind that sheet.** It covers 62vh and the yard above
+stays visible, so a scrim would block the one gesture worth having — picking a different
+grave. Close, or Escape.
+
+**The panel's close button is built once, outside `render()`.** `render()` throws the page
+away and rebuilds it on every `show()`; a dismissal built with the page would be rebound
+fifteen times a session. It is appended to the root and `render()` replaces only its own
+`.gy-epitaph__page`.
+
+**That Escape handler is on the bubble phase, and it matters.** `js/autopsy.js` takes Escape
+on *capture* and stops it there, so with a report open the report closes and the grave
+underneath it survives. Move the panel's listener to capture and one Escape closes both.
 
 **An idea's door out is a `<button>`, so it has to give up every button default.** It opens
 the report here rather than navigating, but it must read as the same affordance as the repo

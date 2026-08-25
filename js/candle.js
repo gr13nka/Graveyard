@@ -31,13 +31,17 @@ export function mountCandle(frame) {
 
   frame.appendChild(el);
 
+  let held = false;
+
   /* transform only — a compositor-level move, so tracking the pointer costs
      nothing per frame. */
   const onMove = (event) => {
     el.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
-    el.classList.add('is-held');
+    /* Guarded: this runs on every pointer move, and rewriting a class that is
+       already there is a style invalidation for nothing. */
+    if (!held) { held = true; el.classList.add('is-held'); }
   };
-  const onLeave = () => el.classList.remove('is-held');
+  const onLeave = () => { held = false; el.classList.remove('is-held'); };
 
   frame.addEventListener('pointermove', onMove);
   frame.addEventListener('pointerleave', onLeave);

@@ -204,6 +204,9 @@ than inventing a lifespan for it.
 - **The panel says `never born, because`**, not `cause of death`.
 - **Where a repo link would be, there is `read the autopsy`** — the full
   analysis opens over the yard, rendered in the page.
+- **It is buried on the other side of the road.** Ideas take the right-hand
+  field, repos the left, so which ground a grave stands in says what it was
+  before you read a word of it.
 
 ## Lighting a candle
 
@@ -333,20 +336,35 @@ so markup inside a report is only ever read as the characters it is made of.
 
 ## How the layout works
 
+**The road divides the two kinds.** Repos stand in the field left of it, ideas
+in the field right of it. The marker pools already said which was which — a repo
+takes a headstone, an idea a cairn — and the two grounds put that same
+distinction somewhere you can read from the gate instead of leaving the two
+interleaved down one column. Each ground carries a header naming it and counting
+what is buried there.
+
 **Graves come in blocks.** Plots of two or three aligned columns, two or three
 rows, with roughly 70% of slots occupied. The column alignment is what reads as
 "somebody laid this out"; the empty slots and the per-stone tilt are what stop
-it reading as a spreadsheet. Blocks alternate sides of the path.
+it reading as a spreadsheet. Each field gets its own run of blocks down it.
 
-**Every placement derives from a hash of the slug** — which side, which column,
-which marker, the tilt, the undergrowth around it. Nothing is stored in the data
-file and nothing is random at runtime, so the yard is identical on every reload
-and a grave you remember stays where you left it. The practical consequence:
+**Every placement derives from a hash of the slug** — which column, which
+marker, the tilt, the undergrowth around it. Which *side* is the one thing that
+does not: that is the grave's kind. Nothing else is stored in the data file and
+nothing is random at runtime, so the yard is identical on every reload and a
+grave you remember stays where you left it. The practical consequence:
 **changing a project's `slug` moves its grave.** Its `name` can change freely.
 
-**Order is by date of death, newest first.** You walk in from the fresh graves
-and back through time. Year markers on the path show where each year begins, and
-lanterns sit between blocks.
+**Order is by date of death, newest first,** down each side independently. You
+walk in from the fresh graves and back through time. Year markers on the path
+follow the repos — the only side with a spread of years to mark, since the ideas
+here were all filtered inside a fortnight — and lanterns are spaced evenly down
+the road rather than sitting in the gaps between blocks, because with a field on
+each side there are no gaps left to sit in.
+
+**A yard holding only one kind is laid out the old way,** blocks alternating
+down both fields. Half an empty yard is worse than a mixed one, and a fork on
+its first day — repos buried, no ideas yet — would otherwise get exactly that.
 
 **Selecting a grave lights it.** A pool of light appears on the ground, stones
 within about 460px warm toward the lantern colour, and each of them throws a
@@ -363,6 +381,12 @@ with its own pool of light, warming the stones it passes. It throws no shadows
 — only the grave you picked does that, so the shadows stay still instead of
 swinging around with every movement of the mouse. Over the epitaph panel the
 normal cursor returns; touch devices never see the candle.
+
+**On a narrow screen the panel is a sheet, and it closes.** Below 900px the two
+panes become one: the yard fills the screen and a grave's page rises over the
+foot of it. Nothing is picked, no sheet — so the graveyard is whole until you
+tap something. `close`, or Escape, puts it away and gives the grave back. With a
+report open, Escape closes the report first and leaves the grave beneath it.
 
 ## Project structure
 

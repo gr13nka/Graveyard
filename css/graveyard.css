@@ -432,6 +432,35 @@ html, body { height: 100%; margin: 0; }
   --gy-rule: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 200'%3E%3Cpath d='M4,0 C2.5,12 5.5,25 4,37 C2.5,50 5.5,62 4,75 C2.5,87 5.5,100 4,112 C2.5,125 5.5,137 4,150 C2.5,162 5.5,175 4,187 C3,195 4.5,197 4,200' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 
+/*
+ * The way out of the sheet. Absent on wide screens on purpose: there the panel
+ * is a permanent pane beside the yard, nothing is covered, and a close button
+ * would offer to dismiss something that cannot be in the way.
+ *
+ * It gives up every button default for the same reason .gy-epitaph__link--read
+ * does — shipped once without the reset, the contrast audit caught it at
+ * 1.53:1 against the paper.
+ */
+.gy-epitaph__close {
+  display: none;
+  position: absolute;
+  top: var(--krk-space-3);
+  right: var(--krk-space-4);
+  z-index: 2;
+  appearance: none;
+  margin: 0;
+  padding: var(--krk-space-2) var(--krk-space-3);
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: var(--krk-text-sm);
+  color: var(--krk-ink-soft);
+  cursor: pointer;
+}
+
+.gy-epitaph__close:hover { color: var(--krk-ink); }
+.gy-epitaph__close:focus-visible { outline: 2px solid var(--krk-accent); outline-offset: 2px; }
+
 .gy-epitaph__page { max-width: 46ch; }
 
 /* Demoted from accent: an amber badge directly above the name was the first
@@ -539,6 +568,15 @@ html, body { height: 100%; margin: 0; }
     padding: var(--krk-space-5) var(--krk-space-5) var(--krk-space-6);
   }
   .gy-epitaph::before { display: none; }
+  .gy-epitaph__close { display: block; }
+
+  /* Nothing picked, no sheet. The empty state is a wide-screen affordance —
+     on a phone it is 62vh of sleeping cat sitting on top of the graveyard,
+     and there was no way to get out from under it. */
+  .gy-epitaph.is-empty { display: none; }
+
+  /* The page needs room for the close button to sit above it. */
+  .gy-epitaph__page { padding-top: var(--krk-space-4); }
 }
 
 /* ---- Dark-ground repairs for the kit's drawn assets ------------------
@@ -604,6 +642,35 @@ html, body { height: 100%; margin: 0; }
 }
 
 .gy-sign__meta {
+  margin: var(--krk-space-1) 0 0;
+  font-size: var(--krk-text-sm);
+  color: var(--gy-mid);
+}
+
+/* ---- The two grounds -------------------------------------------------
+ * One header over each field, naming the half of the yard beneath it. They
+ * sit at --gy-mid, a step back from the graves: they label the ground, and a
+ * label that reads louder than the thing it labels is a sign about a sign.
+ */
+
+.gy-ground {
+  position: absolute;
+  translate: -50% 0;
+  text-align: center;
+  pointer-events: none;
+  /* Narrower than the field so a long count never reaches across the road. */
+  max-width: 34%;
+}
+
+.gy-ground__name {
+  margin: 0;
+  font-size: var(--krk-text-xl);
+  font-weight: 400;
+  color: var(--gy-near);
+  letter-spacing: 0.01em;
+}
+
+.gy-ground__meta {
   margin: var(--krk-space-1) 0 0;
   font-size: var(--krk-text-sm);
   color: var(--gy-mid);

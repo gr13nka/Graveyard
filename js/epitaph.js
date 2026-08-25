@@ -67,12 +67,29 @@ function block(tag, className, text) {
   return el;
 }
 
-export function mountEpitaph(root) {
+export function mountEpitaph(root, { onClose } = {}) {
   root.classList.add('gy-epitaph');
 
+  /*
+   * The way out. On a narrow screen the panel is a sheet pinned over the foot
+   * of the yard, and until this existed there was no way back to the graves:
+   * you could open one and never close it. It is built once rather than with
+   * the page, because the page is thrown away and rebuilt on every show() and
+   * a dismissal that went with it would have to be rebound each time.
+   */
+  const close = block('button', 'gy-epitaph__close krk-hand', 'close');
+  close.type = 'button';
+  close.setAttribute('aria-label', 'Close and go back to the graveyard');
+  root.appendChild(close);
+
+  /* Whatever was focused when the grave opened, so dismissing can hand focus
+     back to that marker instead of dropping it at the top of the document. */
+  let opener = null;
+  let page = null;
+
   function render(children) {
-    root.innerHTML = '';
-    const page = document.createElement('div');
+    page?.remove();
+    page = document.createElement('div');
     page.className = 'gy-epitaph__page';
     children.forEach((child) => page.appendChild(child));
     root.appendChild(page);
@@ -95,6 +112,7 @@ export function mountEpitaph(root) {
   }
 
   function show(project) {
+    opener = document.activeElement?.closest?.('.gy-marker') ?? null;
     root.classList.remove('is-empty');
     const idea = project.kind === 'idea';
     const parts = [];
@@ -158,6 +176,30 @@ export function mountEpitaph(root) {
     render(parts);
   }
 
+  /*
+   * Dismissing is the empty state rather than a third mode of its own:
+   * showEmpty() already restores the cat and sets .is-empty, which is the hook
+   * the narrow layout hides the sheet on. onClose lets the page drop the
+   * selection along with it, so the yard does not keep a grave lit for a panel
+   * that is no longer open.
+   */
+  function dismiss() {
+    if (root.classList.contains('is-empty')) return;
+    const back = opener;
+    opener = null;
+    showEmpty();
+    onClose?.();
+    back?.focus?.();
+  }
+
+  close.addEventListener('click', dismiss);
+
+  /* Bubble phase, not capture: the autopsy reader takes Escape on capture and
+     stops it there, so an open report closes before the grave beneath it. */
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') dismiss();
+  });
+
   showEmpty();
-  return { show, showEmpty };
+  return { show, showEmpty, close: dismiss };
 }

@@ -45,8 +45,8 @@ function ambientEl({ name, size }) {
  * Build the cemetery into `root`.
  * @returns {{select: (slug: string|null) => void, scrollHome: () => void}}
  */
-export function mountScene(root, layout, { onSelect, heading } = {}) {
-  const { plots, roadX, height, lamps = [], milestones = [] } = layout;
+export function mountScene(root, layout, { onSelect, heading, groundLabels = {} } = {}) {
+  const { plots, roadX, height, lamps = [], milestones = [], grounds = [] } = layout;
 
   /* How far each light reaches, in px. Bounded on purpose: a falloff that
      never reaches zero is a global tint, not a light. The carried candle is
@@ -101,6 +101,32 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
     field.appendChild(gateSign);
     krkStagger(gateSign, { mode: 'wave', step: 90 });
   }
+
+  /*
+   * One header over each ground. The gate sign says what the whole place is;
+   * these say which half of it you are looking at, and they stand over their
+   * own field rather than on the road, which belongs to neither.
+   */
+  grounds.forEach((ground) => {
+    const label = groundLabels[ground.kind] ?? {};
+    const header = document.createElement('header');
+    header.className = `gy-ground gy-ground--${ground.kind}`;
+    header.id = `gy-ground-${ground.kind}`;
+    header.dataset.kind = ground.kind;
+    header.style.left = `${ground.x}%`;
+    header.style.top = `${ground.y}px`;
+
+    const groundName = document.createElement('h2');
+    groundName.className = 'gy-ground__name krk-hand krk-enter-rise';
+    groundName.textContent = label.title ?? ground.kind;
+    const groundMeta = document.createElement('p');
+    groundMeta.className = 'gy-ground__meta krk-enter-rise';
+    groundMeta.textContent = label.meta ?? String(ground.count);
+
+    header.append(groundName, groundMeta);
+    field.appendChild(header);
+    krkStagger(header, { mode: 'wave', step: 90 });
+  });
 
   const road = roadEl(height);
   road.style.left = `calc(${roadX}% - ${ROAD_WIDTH / 2}px)`;
@@ -169,15 +195,35 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
 
   field.appendChild(haloLayer);
 
-  const plotLayer = document.createElement('div');
-  plotLayer.className = 'gy-plots';
-  field.appendChild(plotLayer);
+  /*
+   * A layer per ground, so each half of the yard is a landmark a screen reader
+   * can move between instead of one flat run of fifteen buttons. Both are
+   * inset:0 and neither takes a z-index of its own, so a plot's depth still
+   * resolves against every other plot rather than only its own side's.
+   */
+  const layers = new Map();
+
+  function layerFor(kind) {
+    const key = grounds.length ? kind : 'all';
+    if (!layers.has(key)) {
+      const el = document.createElement(grounds.length ? 'section' : 'div');
+      el.className = grounds.length ? `gy-plots gy-plots--${key}` : 'gy-plots';
+      if (grounds.length) {
+        el.dataset.kind = key;
+        el.setAttribute('aria-labelledby', `gy-ground-${key}`);
+      }
+      field.appendChild(el);
+      layers.set(key, el);
+    }
+    return layers.get(key);
+  }
 
   const byslug = new Map();
 
   plots.forEach((plot) => {
     const el = document.createElement('div');
     el.className = `gy-plot gy-plot--${plot.side}`;
+    el.dataset.kind = plot.kind;
     el.style.setProperty('--gy-size', `${plot.size}px`);
     el.style.setProperty('--gy-tilt', `${plot.tilt}deg`);
     el.style.setProperty('--gy-seed', String(plot.seed ?? 0));
@@ -202,12 +248,12 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
     el.appendChild(marker);
 
     byslug.set(plot.project.slug, { el, marker, plot });
-    plotLayer.appendChild(el);
+    layerFor(plot.kind).appendChild(el);
   });
 
   /* Stable per-grave delays now; the class that consumes them is added when
      the grave actually scrolls into view. */
-  krkStagger(plotLayer, { mode: 'scatter', spread: 450 });
+  layers.forEach((layer) => krkStagger(layer, { mode: 'scatter', spread: 450 }));
 
   const revealed = new WeakSet();
   const watcher = new IntersectionObserver(
@@ -266,7 +312,15 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
    * resize.
    */
   function castLight() {
+    /*
+     * Every layout read happens here, before the first style write. The halo's
+     * left/top used to be written between clientWidth and the rect read below,
+     * so each frame the pointer moved flushed those writes and laid the whole
+     * field out again mid-pass — a forced reflow per frame, for nothing.
+     */
     const width = scroller.clientWidth || 1;
+    const box = pointer ? scroller.getBoundingClientRect() : null;
+    const scrolled = scroller.scrollTop;
     const toPx = (pct) => (pct / 100) * width;
 
     const sources = [];
@@ -292,9 +346,8 @@ export function mountScene(root, layout, { onSelect, heading } = {}) {
     }
 
     if (pointer) {
-      const box = scroller.getBoundingClientRect();
       const cx = pointer.x - box.left;
-      const cy = pointer.y - box.top + scroller.scrollTop;
+      const cy = pointer.y - box.top + scrolled;
       /* casts: false — a shadow that swung around with every twitch of the
          pointer read as noise, not as light. The candle warms what it passes;
          only the grave you picked throws shadows. */

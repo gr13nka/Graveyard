@@ -47,7 +47,11 @@
     const projects = await (await fetch('./data/projects.json')).json();
     await loadDoodles(MOTIFS, './doodles/');
 
-    const epitaph = mountEpitaph(document.getElementById('epitaph'));
+    /* Closing the panel drops the selection with it: a grave left lit for a
+       panel that is no longer open reads as a grave that is still chosen. */
+    const epitaph = mountEpitaph(document.getElementById('epitaph'), {
+      onClose: () => { selected = null; scene?.select(null); },
+    });
 
     /* Playful register: the kit's default 'calm' dial swallows tap cues
        entirely, and a graveyard you click through needs the tap. */
@@ -63,6 +67,7 @@
 
     const sceneEl = document.getElementById('scene');
     let scene = null;
+    let candle = null;
     let editor = null;
     let selected = null;
 
@@ -76,15 +81,37 @@
       editor?.setSelected(project);
     }
 
+    /* Every grave buried from a repo omits `kind`, so its absence is what says
+       "project" — never compare against it directly. */
+    const kindOf = (project) => project.kind ?? 'project';
+    const spanOf = (list) => {
+      const years = list.map((p) => String(p.died).slice(0, 4)).sort();
+      return years[0] === years[years.length - 1]
+        ? years[0]
+        : `${years[0]}–${years[years.length - 1]}`;
+    };
+
     function rebuild() {
       /* The scene about to be replaced still holds observers and a vigil
          subscription; the DOM they watch is a moment from being thrown away. */
       scene?.destroy();
-      const years = projects.map((p) => String(p.died).slice(0, 4)).sort();
+      /* mountScene wipes the frame, which detaches the candle's element but
+         leaves its pointer listeners bound to the frame that survives — every
+         rebuild otherwise stacks another one writing into a dead node. */
+      candle?.destroy();
+      const repos = projects.filter((p) => kindOf(p) === 'project');
+      const ideas = projects.filter((p) => kindOf(p) === 'idea');
       scene = mountScene(sceneEl, layOutGraveyard(projects), {
         heading: {
           title: 'Graveyard',
-          meta: `${projects.length} projects · ${years[0]}–${years[years.length - 1]}`,
+          /* "graves", not "projects": seven of these were never projects. */
+          meta: `${projects.length} graves · ${spanOf(projects)}`,
+        },
+        /* The copy for each ground lives here with the rest of the page's
+           words; plots.js supplies only where the headers stand. */
+        groundLabels: {
+          project: { title: 'Repos', meta: `${repos.length} · ${spanOf(repos)}` },
+          idea: { title: 'Ideas', meta: `${ideas.length} · never built` },
         },
         onSelect: (project) => {
           show(project);
@@ -92,7 +119,7 @@
         },
       });
       /* mountScene clears the frame, so the candle has to go back on after it. */
-      mountCandle(sceneEl);
+      candle = mountCandle(sceneEl);
       if (selected && projects.some((p) => p.slug === selected)) scene.select(selected);
       else selected = null;
     }
