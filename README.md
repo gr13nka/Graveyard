@@ -2,13 +2,13 @@
 
 # Graveyard
 
-### [gr13nka.github.io/Graveyard →](https://gr13nka.github.io/Graveyard/)
-
 [![live site](https://img.shields.io/badge/live-gr13nka.github.io%2FGraveyard-6f6ac4?style=flat-square)](https://gr13nka.github.io/Graveyard/)
 [![pages](https://img.shields.io/github/deployments/gr13nka/Graveyard/github-pages?style=flat-square&label=pages)](https://gr13nka.github.io/Graveyard/)
 [![license MIT](https://img.shields.io/badge/license-MIT-6f6ac4?style=flat-square)](LICENSE)
 ![no build step](https://img.shields.io/badge/build-none-8b8b8b?style=flat-square)
 ![zero dependencies](https://img.shields.io/badge/dependencies-0-8b8b8b?style=flat-square)
+
+**[See my own Graveyard live →](https://gr13nka.github.io/Graveyard/)**
 
 ***Your projects died. Bury them properly.***
 
