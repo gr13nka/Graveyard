@@ -175,8 +175,8 @@ html, body { height: 100%; margin: 0; }
   font-size: var(--krk-text-sm);
   color: var(--krk-ink-soft);
   /* Always readable. Hover-only names meant finding a project required
-     hovering all eight of them — the single worst thing about navigating
-     the yard. */
+     hovering every grave in the yard — the single worst thing about
+     navigating it. */
   transition: color var(--krk-motion-fast) var(--krk-motion-ease);
   pointer-events: none;
 }
@@ -324,8 +324,8 @@ html, body { height: 100%; margin: 0; }
   animation: gy-candle-sprout 320ms var(--krk-motion-bounce) forwards;
 }
 
-/* Staggered off a hash of the slug, so eight candles do not flicker in step
-   and the yard still renders identically on every reload. */
+/* Staggered off a hash of the slug, so no two candles flicker in step and
+   the yard still renders identically on every reload. */
 .is-vigil .gy-marker__flame {
   opacity: 1;
   animation: gy-flicker 2.6s steps(1) infinite;

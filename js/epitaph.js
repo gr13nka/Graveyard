@@ -11,7 +11,7 @@
  */
 
 import { doodle } from './doodles.js';
-import { markerVariantsFor } from './marker.js';
+import { markerFor } from './marker.js';
 import { matchbox } from './matchbox.js';
 import { krkStagger } from '../vendor/karakuli/anim.js';
 
@@ -117,7 +117,7 @@ export function mountEpitaph(root, { onClose } = {}) {
     const idea = project.kind === 'idea';
     const parts = [];
 
-    const marker = doodle(project.marker || markerVariantsFor(project.kind)[0]);
+    const marker = doodle(markerFor(project));
     marker.classList.add('krk-boil');
     const badge = block('div', 'gy-epitaph__badge krk-enter-draw');
     badge.appendChild(marker);

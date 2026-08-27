@@ -197,7 +197,7 @@ export function mountScene(root, layout, { onSelect, heading, groundLabels = {} 
 
   /*
    * A layer per ground, so each half of the yard is a landmark a screen reader
-   * can move between instead of one flat run of fifteen buttons. Both are
+   * can move between instead of one flat run of twenty-six buttons. Both are
    * inset:0 and neither takes a z-index of its own, so a plot's depth still
    * resolves against every other plot rather than only its own side's.
    */

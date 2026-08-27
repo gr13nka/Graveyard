@@ -15,7 +15,8 @@
  * to know any of the arithmetic below.
  */
 
-import { markerVariantsFor } from './marker.js';
+import { markerFor } from './marker.js';
+import { hash } from './hash.js';
 
 /* Road position and the two fields either side of it, as % of scene width. */
 const ROAD_X = 58;
@@ -31,16 +32,6 @@ const FILL_RATE = 0.7;    // share of slots in a block that hold a grave
 const BACK_SCALE = 0.82;  // how much smaller the furthest row renders
 
 const AMBIENT = ['tree', 'flower-daisy', 'sprout', 'leaf', 'fence-post'];
-
-/* FNV-1a — small, fast, and stable across engines, which is the whole point. */
-function hash(text) {
-  let h = 2166136261;
-  for (let i = 0; i < text.length; i++) {
-    h ^= text.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return h >>> 0;
-}
 
 /* A stable 0..1 for the nth independent decision about one key. */
 function roll(key, n) {
@@ -124,12 +115,7 @@ function packBlocks(buried, sideAt) {
       const depth = shape.rows - 1 - slot.row;
       const scale = lerp(BACK_SCALE, 1, shape.rows === 1 ? 1 : slot.row / (shape.rows - 1));
 
-      /* Only the markers its kind may stand under: a marker naming one from
-         the other pool falls back to the hash, exactly as a typo does. */
-      const variants = markerVariantsFor(project.kind);
-      const variant = variants.includes(project.marker)
-        ? project.marker
-        : variants[hash(slug) % variants.length];
+      const variant = markerFor(project);
 
       plots.push({
         project,
@@ -140,13 +126,16 @@ function packBlocks(buried, sideAt) {
         /* Columns share an x — the alignment is the whole effect — and only
            then get a few pixels of wander so nothing looks stamped. */
         x: shape.originX + slot.col * COL_STEP + (roll(slug, 2) - 0.5) * 1.2,
-        y: originY - (shape.rows - 1 - slot.row) * ROW_STEP + (roll(slug, 3) - 0.5) * 10,
+        /* usedRows, not shape.rows: originY was measured from the rows this
+           block actually fills, and a partly-filled tail block counted against
+           its full height instead floated its graves up into the block above. */
+        y: originY - (usedRows - 1 - slot.row) * ROW_STEP + (roll(slug, 3) - 0.5) * 10,
         size: Math.round(lerp(112, 146, roll(slug, 4)) * scale),
         depth,
         tilt: lerp(-4, 4, roll(slug, 5)),
         /* Phase for anything that loops at this grave — today, the flicker of
-           a candle somebody lit. Hashed like everything else here, so eight
-           flames drift apart without the yard becoming random at runtime. */
+           a candle somebody lit. Hashed like everything else here, so every
+           flame drifts apart without the yard becoming random at runtime. */
         seed: roll(slug, 7),
         motifs: ambientFor(slug, side),
       });

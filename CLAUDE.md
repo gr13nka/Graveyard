@@ -40,15 +40,15 @@ exactly like real failures:
 
 There is a third guard that drops them just as quietly: **opacity is not invisibility.**
 `.gy-engraving` is deliberately `0.82` — chalk cut into stone — so a visibility test that
-skips anything under full opacity throws away all sixteen engraved years *and still reports
-a pass*. Skip only what is at nothing (`< 0.05`), and fold the element's effective opacity
-into the foreground alpha before compositing, because 0.82 chalk over the stone is what the
-eye actually gets.
+skips anything under full opacity throws away all twenty-eight engraved years *and still
+reports a pass*. Skip only what is at nothing (`< 0.05`), and fold the element's effective
+opacity into the foreground alpha before compositing, because 0.82 chalk over the stone is
+what the eye actually gets.
 
 An audit that skips those does not fail loudly — it silently stops covering the engraved
 years, because `offsetParent` is null for every SVG node and the obvious visibility guard
-drops them all. Check the count: the yard alone is **44 text nodes, 16 of them engraved**.
-With an autopsy open it is around 400, since a rendered report is by far the largest block
+drops them all. Check the count: the yard alone is **63 text nodes, 28 of them engraved**.
+With an autopsy open it is around 450, since a rendered report is by far the largest block
 of text on the site. Measure that number rather than trusting it — it moves whenever chrome
 is added (the two ground headers and the panel's close button moved it from 39), and a
 stale count is worse than none, since the whole point of it is to catch a silent hole.
@@ -56,9 +56,11 @@ stale count is worse than none, since the whole point of it is to catch a silent
 ## Invariants
 
 **Placement derives from a hash of the slug — except which side.** `js/plots.js` computes
-column, marker variant, tilt and undergrowth from `hash(slug)`. Side is the grave's *kind*:
-repos fill the left field, ideas the right, and the road between them is the boundary rather
-than just a thing running down the middle. Nothing about layout is stored in
+column, tilt and undergrowth from `hash(slug)`, and `markerFor()` picks the stone from the
+same hash. That hash lives in `js/hash.js` because two modules need to agree on it. Side is
+the grave's *kind*: repos fill the left field, ideas the right, and the road between them is
+the boundary rather than just a thing running down the middle. Nothing about layout is
+stored in
 `data/projects.json`, and nothing is random at runtime — so the yard is identical on every
 reload. The consequence: **changing a project's `slug` moves its grave** within its ground,
 and **changing its `kind` moves it across the road.** Its `name` is free to change.
@@ -195,13 +197,21 @@ That duplicate is a deliberate consequence of the browser/Node boundary, not an 
 but it is **one** copy, shared by both tools. Do not give a tool its own.
 
 **A grave's kind decides which markers it may stand under, and the pools do not overlap.**
-`markerVariantsFor(kind)` in `js/marker.js` is the only answer to that question; `plots.js`
-validates `project.marker` against it and falls back to the hash when it names one from the
-other pool — the same thing a typo does. A project cannot take a cairn and an idea cannot
-take a headstone, and that constraint is the feature, not an oversight to relax.
+`markerVariantsFor(kind)` in `js/marker.js` is the only answer to that question. A project
+cannot take a cairn and an idea cannot take a headstone, and that constraint is the feature,
+not an oversight to relax.
+
+**`markerFor(project)` is the only place that answers which stone one grave gets.** It
+validates `project.marker` against its kind's pool and falls back to `hash(slug)` when it
+names one from the other pool — the same thing a typo does. The yard draws that stone and so
+does the epitaph panel's badge, and they used to work it out separately: `plots.js` hashed,
+while the panel took `project.marker || variants[0]`. Every grave in the yard carried an
+explicit marker, so the two agreed by accident — until `bury.mjs`, which never writes one,
+put sixteen hash-picked stones in the ground under a panel that showed `headstone-round` for
+all of them. One resolver, two callers, and nothing to keep in step.
 
 **`kind` absent means `"project"`.** Every grave buried from a repo omits it, and
-`tools/bury.mjs` must keep omitting it — writing `"kind": "project"` onto eight existing
+`tools/bury.mjs` must keep omitting it — writing `"kind": "project"` onto nineteen existing
 entries would be churn for nothing. Read it as `project.kind ?? 'project'`.
 
 **An idea has no `born` and no `repo`, and that is load-bearing, not missing data.** It was

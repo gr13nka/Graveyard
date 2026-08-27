@@ -37,9 +37,9 @@ a full GitHub URL. It reads through the `gh` CLI you are already signed in to,
 so **private repos work and there are no tokens to manage**.
 
 ```bash
-node tools/bury.mjs TwinStickDraft \
-  --epitaph "Two sticks. Five weeks. One room." \
-  --cause "got interested in something else on a Thursday"
+node tools/bury.mjs pixeltui \
+  --epitaph "Queued the art. Nobody came back for it." \
+  --cause "cleaned up for a public release that had no audience"
 ```
 
 Then reload the page. That is the whole loop.
@@ -102,7 +102,7 @@ It does not guess what is dead — only what has not been touched in a while.
 ### Screenshots
 
 ```bash
-node tools/bury.mjs avm --force --shot ~/Desktop/avm.png --shot ~/Desktop/avm-2.png
+node tools/bury.mjs JewelSort --force --shot ~/Desktop/jewels.png --shot ~/Desktop/jewels-2.png
 ```
 
 Files are copied to `shots/<slug>/1.png`, `2.png` and recorded in the entry, so
@@ -114,7 +114,7 @@ framed card.
 Re-run with `--force`; it replaces the entry in place:
 
 ```bash
-node tools/bury.mjs avm --force --epitaph "A virtual machine with no world to run."
+node tools/bury.mjs pixeltui --force --epitaph "Queued the art. Nobody came back for it."
 ```
 
 Or edit `data/projects.json` directly — the file is the source of truth and the
@@ -284,16 +284,16 @@ floor really is one authorisation, once.
 
 ```json
 {
-  "slug": "twinstickdraft",
-  "name": "TwinStickDraft",
-  "repo": "https://github.com/gr13nka/TwinStickDraft",
-  "born": "2025-04-14",
-  "died": "2025-05-20",
-  "epitaph": "Two sticks. Five weeks. One room.",
-  "description": "First test project for a twin-stick shooter…",
-  "cause": "got interested in something else on a Thursday",
-  "marker": "mound",
-  "screenshots": ["shots/twinstickdraft/1.png"]
+  "slug": "tab-pal",
+  "name": "tab-pal",
+  "repo": "https://github.com/gr13nka/tab-pal",
+  "born": "2024-04-29",
+  "died": "2026-06-27",
+  "epitaph": "Rebuilt after two years, and finished the same day.",
+  "description": "A cross-platform colour-palette tool — generate, browse…",
+  "cause": "Coolors was already free and already open",
+  "marker": "headstone-cross",
+  "screenshots": ["shots/tab-pal/1.png"]
 }
 ```
 

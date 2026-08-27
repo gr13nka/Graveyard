@@ -60,9 +60,9 @@ of its slug, so rename the slug and the grave moves.
 ## Bury a project
 
 ```bash
-node tools/bury.mjs TwinStickDraft \
-  --epitaph "Two sticks. Five weeks. One room." \
-  --cause "got interested in something else on a Thursday"
+node tools/bury.mjs pixeltui \
+  --epitaph "Queued the art. Nobody came back for it." \
+  --cause "cleaned up for a public release that had no audience"
 ```
 
 One command, one grave. It writes everything but the epitaph and the cause of death. Those

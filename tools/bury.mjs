@@ -50,9 +50,9 @@ Options
   --help
 
 Examples
-  node tools/bury.mjs TwinStickDraft --epitaph "Two sticks. Five weeks. One room."
-  node tools/bury.mjs gr13nka/avm --cause "semester ended" --marker obelisk
-  node tools/bury.mjs OOP --desc "Coursework. Exists to prove attendance." --shot ~/shot.png
+  node tools/bury.mjs pixeltui --epitaph "Queued the art. Nobody came back for it."
+  node tools/bury.mjs gr13nka/JewelSort --cause "a prototype that stopped at v0.5" --marker mound
+  node tools/bury.mjs TheMap --desc "A generative map with a runic language." --shot ~/shot.png
 `.trim();
 
 /* ---- github ---------------------------------------------------------- */

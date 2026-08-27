@@ -8,6 +8,7 @@
  */
 
 import { doodle } from './doodles.js';
+import { hash } from './hash.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -47,6 +48,24 @@ const VARIANTS_BY_KIND = {
 /** The markers open to a grave of this kind. Unknown kinds are projects. */
 export function markerVariantsFor(kind) {
   return VARIANTS_BY_KIND[kind] || VARIANTS_BY_KIND.project;
+}
+
+/**
+ * The marker one grave stands under: the one it names, if its kind may take
+ * it, and otherwise one picked from its slug and kept for good.
+ *
+ * The yard draws this stone and so does the epitaph panel, and a grave showing
+ * a cross on the ground and an urn in the panel reads as two graves. So there
+ * is one answer to the question and both of them ask it here.
+ *
+ * A marker naming the other kind's pool falls back to the hash, exactly as a
+ * typo does: the pools not overlapping is the constraint, not an oversight.
+ */
+export function markerFor(project) {
+  const variants = markerVariantsFor(project.kind);
+  return variants.includes(project.marker)
+    ? project.marker
+    : variants[hash(project.slug) % variants.length];
 }
 
 const year = (iso) => (iso ? String(iso).slice(0, 4) : '');

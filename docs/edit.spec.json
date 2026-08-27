@@ -1,0 +1,15 @@
+{
+  "_": "Reproduces docs/images/edit.png. From the craft-readme skill dir:",
+  "_run": "node scripts/capture.mjs /path/to/Graveyard/docs/edit.spec.json",
+  "serve": "..",
+  "path": "/?edit",
+  "viewport": { "width": 1200, "height": 940, "dsf": 2 },
+  "settle": 2200,
+  "steps": [
+    { "eval": "document.querySelector('[aria-label^=\"pixeltui\"]').scrollIntoView({ block: 'center' })" },
+    { "click": "[aria-label^='pixeltui']", "wait": 1400 },
+    { "click": ".gy-edit-open", "wait": 1400 }
+  ],
+  "radius": 16,
+  "out": "docs/images/edit.png"
+}

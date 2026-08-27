@@ -36,66 +36,6 @@
     "screenshots": []
   },
   {
-    "slug": "twinstickdraft",
-    "name": "TwinStickDraft",
-    "repo": "https://github.com/gr13nka/TwinStickDraft",
-    "born": "2025-04-14",
-    "died": "2025-05-20",
-    "epitaph": "Two sticks. Five weeks. One room.",
-    "description": "First test project for a twin-stick shooter. Movement felt genuinely good. Nothing else was ever built around it.",
-    "cause": "got interested in something else on a Thursday",
-    "marker": "mound",
-    "screenshots": []
-  },
-  {
-    "slug": "keychecker",
-    "name": "KeyChecker",
-    "repo": "https://github.com/gr13nka/KeyChecker",
-    "born": "2023-06-06",
-    "died": "2025-04-14",
-    "epitaph": "Sent key codes into the void for two years.",
-    "description": "Sends key codes. Lived an unusually long time for something this small, mostly because it kept being almost useful.",
-    "cause": "outlived by the keyboard it debugged",
-    "marker": "urn",
-    "screenshots": []
-  },
-  {
-    "slug": "avm",
-    "name": "avm",
-    "repo": "https://github.com/gr13nka/avm",
-    "born": "2023-09-11",
-    "died": "2023-10-18",
-    "epitaph": "A virtual machine with no world to run.",
-    "description": "A small stack VM in C++. Got as far as arithmetic and jumps before the semester moved on.",
-    "cause": "semester ended",
-    "marker": "obelisk",
-    "screenshots": []
-  },
-  {
-    "slug": "oop",
-    "name": "OOP",
-    "repo": "https://github.com/gr13nka/OOP",
-    "born": "2023-09-01",
-    "died": "2023-10-16",
-    "epitaph": "Inherited everything. Overrode nothing.",
-    "description": "Coursework in C++. Exists as proof that the classes were attended.",
-    "cause": "coursework, submitted",
-    "marker": "headstone-round",
-    "screenshots": []
-  },
-  {
-    "slug": "cppprograms",
-    "name": "CppPrograms",
-    "repo": "https://github.com/gr13nka/CppPrograms",
-    "born": "2023-04-24",
-    "died": "2023-05-02",
-    "epitaph": "Name is self-explanatory. So was the ending.",
-    "description": "A folder of C++ programs, committed once and never revisited. The oldest grave in the yard.",
-    "cause": "purpose served in eight days",
-    "marker": "headstone-cross",
-    "screenshots": []
-  },
-  {
     "slug": "kopia-backup",
     "name": "Time Machine на kopia",
     "kind": "idea",
@@ -164,5 +104,181 @@
     "description": "A diff viewer where ctrl+click jumps to a definition without leaving the diff. A working prototype existed, and so did six live free tools doing the same thing, which is how a category's price gets fixed at zero.",
     "cause": "six free competitors had set the category's price at zero",
     "autopsy": "autopsies/diff-code-navigation.md"
+  },
+  {
+    "slug": "cursor-kit",
+    "name": "cursor-kit",
+    "repo": "https://github.com/gr13nka/cursor-kit",
+    "born": "2026-08-27",
+    "died": "2026-08-27",
+    "epitaph": "One commit long, and it already worked.",
+    "description": "Custom mouse pointers for macOS screen recordings — an iPadOS-style circle instead of the arrow, animated if you want, with a press reaction that contracts on mouse-down and springs back.",
+    "cause": "there was nothing to add on day two",
+    "screenshots": []
+  },
+  {
+    "slug": "justsit",
+    "name": "JustSit",
+    "repo": "https://github.com/gr13nka/JustSit",
+    "born": "2026-07-28",
+    "died": "2026-08-26",
+    "epitaph": "Never congratulated anyone. Not even itself.",
+    "description": "Wallace's ten stages of shamatha, taught slowly. Every plant in its garden is one finished sitting; leave one early and nothing grows, and nothing is said about that either.",
+    "cause": "it reached iOS and stopped needing anything",
+    "screenshots": []
+  },
+  {
+    "slug": "graveyard",
+    "name": "Graveyard",
+    "repo": "https://github.com/gr13nka/Graveyard",
+    "born": "2026-08-18",
+    "died": "2026-08-25",
+    "epitaph": "Dug every hole here, then lay down in one.",
+    "description": "A scrollable cemetery of dead projects. Every grave carries the years it ran, a line for the epitaph and a line for what killed it, and anyone can leave a candle. No server, no database, no build step.",
+    "cause": "it buried itself to prove the shovel worked",
+    "screenshots": []
+  },
+  {
+    "slug": "craft-readme",
+    "name": "craft-readme",
+    "repo": "https://github.com/gr13nka/craft-readme",
+    "born": "2026-08-21",
+    "died": "2026-08-25",
+    "epitaph": "Wrote the landing page for everything except a second version.",
+    "description": "A Claude Code skill that rebuilds a README as a landing page and takes the screenshots itself — a hero shot and a GIF over headless Chromium, with the reference detail moved out to a guide.",
+    "cause": "the skill was the whole product",
+    "screenshots": []
+  },
+  {
+    "slug": "jedinotebook",
+    "name": "JediNotebook",
+    "repo": "https://github.com/gr13nka/JediNotebook",
+    "born": "2026-02-26",
+    "died": "2026-08-25",
+    "epitaph": "No account, no server, no one to sync with.",
+    "description": "Projects with tasks, time-boxed into today, this week, or someday. Kept in the browser's own database — no account, no server, nothing to sync.",
+    "cause": "kept on this device, and stayed there",
+    "screenshots": []
+  },
+  {
+    "slug": "art-window",
+    "name": "art-window",
+    "repo": "https://github.com/gr13nka/art-window",
+    "born": "2026-08-20",
+    "died": "2026-08-24",
+    "epitaph": "Hung a painting behind every other window.",
+    "description": "A daily painting on your desktop, always fit to the screen with black borders.",
+    "cause": "the desktop was already full",
+    "screenshots": []
+  },
+  {
+    "slug": "ctrlclickdiff",
+    "name": "CtrlClickDiff",
+    "repo": "https://github.com/gr13nka/CtrlClickDiff",
+    "born": "2026-07-23",
+    "died": "2026-08-24",
+    "epitaph": "The prototype worked. The idea beside it had already been filtered.",
+    "description": "Ctrl+click any symbol in a reviewed diff and its declaration opens in a peek widget, inline. Same tab, same scroll position, resolved by name at the revision under review.",
+    "cause": "six free tools had fixed the category price at zero",
+    "screenshots": []
+  },
+  {
+    "slug": "karakuli",
+    "name": "karakuli",
+    "repo": "https://github.com/gr13nka/karakuli",
+    "born": "2026-08-18",
+    "died": "2026-08-24",
+    "epitaph": "Its paper is still under this yard.",
+    "description": "Paper, one pen, and colour kept back for the moments that earn it.",
+    "cause": "finished; it lives in everything it was used for",
+    "screenshots": []
+  },
+  {
+    "slug": "article",
+    "name": "article",
+    "repo": "https://github.com/gr13nka/article",
+    "born": "2026-08-20",
+    "died": "2026-08-24",
+    "epitaph": "Told the agents what it looked like. They kept guessing.",
+    "description": "Agents build interfaces that all look the same, because nothing tells them what your software looks like. Article is that instruction, written down.",
+    "cause": "written down, and that was the deliverable",
+    "screenshots": []
+  },
+  {
+    "slug": "papasheets",
+    "name": "PapaSheets",
+    "repo": "https://github.com/gr13nka/PapaSheets",
+    "born": "2026-07-18",
+    "died": "2026-08-06",
+    "epitaph": "Shipped to version 1.3, for one site.",
+    "description": "An offline Android journal for construction work — a date × contractor matrix, photographs on any cell, and an xlsx export. Built for one site and shipped to version 1.3.",
+    "cause": "the job it logged was finished",
+    "screenshots": []
+  },
+  {
+    "slug": "software-design-lenses",
+    "name": "software-design-lenses",
+    "repo": "https://github.com/gr13nka/software-design-lenses",
+    "born": "2026-07-08",
+    "died": "2026-07-28",
+    "epitaph": "Nine ways to look at code. One review.",
+    "description": "A family of Claude Code skills that analyze a code solution (a snippet/module) or a whole project through the perspectives (\"lenses\") of John Ousterhout's A Philosophy of Software Design. Each lens reports its findings in a shared schema, so findings compose into a single design-review report.",
+    "cause": "the lenses were ground, and then set down",
+    "screenshots": []
+  },
+  {
+    "slug": "nomadnotes",
+    "name": "NomadNotes",
+    "repo": "https://github.com/gr13nka/NomadNotes",
+    "born": "2026-07-20",
+    "died": "2026-07-23",
+    "epitaph": "Wrote on the panel. The firmware already did.",
+    "description": "A handwriting notes app for Onyx Boox e-ink tablets (validated on a Boox Go 10.3), aiming for the lag-free, paper-like inking feel of a Supernote. The pen writes directly on the e-ink panel via the Onyx SDK's raw-drawing path; finished strokes are persisted so ink survives refreshes.",
+    "cause": "lasso-to-link shipped free in the stock firmware",
+    "screenshots": []
+  },
+  {
+    "slug": "themap",
+    "name": "TheMap",
+    "repo": "https://github.com/gr13nka/TheMap",
+    "born": "2026-07-16",
+    "died": "2026-07-16",
+    "epitaph": "A runic language for maps, and no one to read it.",
+    "description": "Palimpsest — a generative living map, with a runic language for its cards and the laws that govern them written as tablets in the same language.",
+    "cause": "one commit, and the language stayed private",
+    "screenshots": []
+  },
+  {
+    "slug": "tab-pal",
+    "name": "tab-pal",
+    "repo": "https://github.com/gr13nka/tab-pal",
+    "born": "2024-04-29",
+    "died": "2026-06-27",
+    "epitaph": "Rebuilt after two years, and finished the same day.",
+    "description": "A cross-platform colour-palette tool — generate, browse, and check palettes — built as one web/desktop/mobile codebase around a pure, perceptually-uniform colour engine. A Coolors-style app, offline-first.",
+    "cause": "Coolors was already free and already open",
+    "screenshots": []
+  },
+  {
+    "slug": "jewelsort",
+    "name": "JewelSort",
+    "repo": "https://github.com/gr13nka/JewelSort",
+    "born": "2026-04-17",
+    "died": "2026-05-31",
+    "epitaph": "Sorted the jewels. Never sorted a player.",
+    "description": "A casual tap-cluster-sort puzzle prototype built in LÖVE 11.x. Source PNG images define the level — each opaque pixel becomes a jewel-shaped hole whose target color is the pixel's RGB.",
+    "cause": "a prototype that reached v0.5 and stopped",
+    "screenshots": []
+  },
+  {
+    "slug": "pixeltui",
+    "name": "pixeltui",
+    "repo": "https://github.com/gr13nka/pixeltui",
+    "born": "2026-04-27",
+    "died": "2026-04-27",
+    "epitaph": "Queued the art. Nobody came back for it.",
+    "description": "A Textual TUI for queueing pixel-art generation jobs against ComfyUI.",
+    "cause": "cleaned up for a public release that had no audience",
+    "screenshots": []
   }
 ]
